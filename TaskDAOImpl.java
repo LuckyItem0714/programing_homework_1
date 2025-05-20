@@ -140,9 +140,7 @@ public class TaskDAOImpl implements TaskDAO {
 			case 2:
 				sorter.setStrategy(new CompletedSortStrategy());
 				List<Task> sortedByCompletion = sorter.sortTasks(tasks);
-				for (Task task : sortedByCompletion) {
-					System.out.println("[" + (task.isCompleted() ? "完了" : "未完了") + "] " + task.getTitle());
-				}
+				show(sortedByCompletion);
 				break;
 			case 3:
 				sorter.setStrategy(new TitleSortStrategy());
