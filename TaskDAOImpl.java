@@ -31,11 +31,10 @@ public class TaskDAOImpl implements TaskDAO {
 		}
 		return tasks;
 	}
-	
+
 	@Override
-	public void showAll() {
-		List<Task> showtasks = findAll();
-		for (Task task : showtasks) {
+	public void show(List<Task> tasks) {
+		for (Task task : tasks) {
 			System.out.println("ID: " + task.getId());
 			System.out.println("課題名: " + task.getTitle());
 			System.out.println("授業名: " + task.getSubject());
@@ -43,6 +42,12 @@ public class TaskDAOImpl implements TaskDAO {
 			System.out.println("状態: " + (task.isCompleted() ? "完了" : "未完了"));
 			System.out.println("---------------------------");
 		}
+	}
+
+	@Override
+	public void showAll() {
+		List<Task> showtasks = findAll();
+		show(showtasks);
 	}
 
 	@Override
@@ -80,11 +85,23 @@ public class TaskDAOImpl implements TaskDAO {
 			e.printStackTrace();
 		}
 	}
-	
+
+	@Override
+	public String setDate() {
+		Scanner scanner = new Scanner(System.in);
+		System.out.print("年：");
+		int year = scanner.nextInt();
+		System.out.print("月：");
+		int month = scanner.nextInt();
+		System.out.print("日：");
+		int day = scanner.nextInt();
+		return year + "-" + month + "-" + day;
+	}
+
 	@Override
 	public int select() {
 		Scanner scanner = new Scanner(System.in);
-		System.out.println("操作を選択してください　1：課題の追加、2：課題の完了、3：課題の削除、4：一覧の表示、5：終了");
+		System.out.println("操作を選択してください　1：課題の追加、2：課題の完了、3：課題の削除、4：一覧の表示、5：ソート、6：終了");
 		int selnum = scanner.nextInt();
 		switch (selnum) {
 		case 1:
@@ -93,13 +110,7 @@ public class TaskDAOImpl implements TaskDAO {
 			System.out.print("授業名：");
 			String subject = scanner.next();
 			System.out.println("締め切り：");
-			System.out.print("年：");
-			int year = scanner.nextInt();
-			System.out.print("月：");
-			int month = scanner.nextInt();
-			System.out.print("日：");
-			int day = scanner.nextInt();
-			String deadline=year+"-"+month+"-"+day;
+			String deadline = setDate();
 			addTask(new Task(0, title, subject, deadline, false));
 			return 0;
 		case 2:
@@ -116,9 +127,44 @@ public class TaskDAOImpl implements TaskDAO {
 			showAll();
 			return 0;
 		case 5:
+			List<Task> tasks = findAll();
+			TaskSorter sorter = new TaskSorter();
+			System.out.println("ソートの内容を選択してください　1：締め切り、2：完了状態、3：課題名、4：授業名");
+			int sortnum = scanner.nextInt();
+			switch (sortnum) {
+			case 1:
+				sorter.setStrategy(new DeadlineSortStrategy());
+				List<Task> sortedByDeadline = sorter.sortTasks(tasks);
+				show(sortedByDeadline);
+				break;
+			case 2:
+				sorter.setStrategy(new CompletedSortStrategy());
+				List<Task> sortedByCompletion = sorter.sortTasks(tasks);
+				for (Task task : sortedByCompletion) {
+					System.out.println("[" + (task.isCompleted() ? "完了" : "未完了") + "] " + task.getTitle());
+				}
+				break;
+			case 3:
+				sorter.setStrategy(new TitleSortStrategy());
+				List<Task> sortedByTitle = sorter.sortTasks(tasks);
+				show(sortedByTitle);
+				break;
+			case 4:
+				sorter.setStrategy(new SubjectSortStrategy());
+				List<Task> sortedBySubject = sorter.sortTasks(tasks);
+				show(sortedBySubject);
+				break;
+			default:
+				System.out.println("1から4の数字を入力してください");
+
+				break;
+			}
+
+			return 0;
+		case 6:
 			return 1;
 		default:
-			System.out.println("1から5の数字を入力してください");
+			System.out.println("1から6の数字を入力してください");
 			return 0;
 		}
 	}
