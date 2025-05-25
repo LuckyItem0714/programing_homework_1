@@ -9,4 +9,5 @@ public interface TaskDAO {
     void deleteTask(int id);
     String setDate();
     int select();
+    Task findAt(int id);
 }
