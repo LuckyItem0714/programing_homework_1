@@ -10,4 +10,5 @@ public interface TaskDAO {
     String setDate();
     int select();
     Task findAt(int id);
+    void close();
 }
