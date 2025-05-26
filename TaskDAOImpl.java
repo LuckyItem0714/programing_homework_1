@@ -22,7 +22,7 @@ public class TaskDAOImpl implements TaskDAO{
 	}
     }
 
-        private interface PreparedStatementConsumer {
+    private interface PreparedStatementConsumer {
         void accept(PreparedStatement pstmt) throws SQLException;
     }
 
@@ -196,6 +196,76 @@ public class TaskDAOImpl implements TaskDAO{
 	}
     }
     
+	    public int select(Command command) {
+        switch (command) {
+            case AddTask add -> handleAddTask();
+            case CompleteTask complete -> handleCompleteTask();
+            case DeleteTask delete -> handleDeleteTask();
+            case ShowAll show -> showAll();
+            case SortTasks sort -> handleSort();
+            case Exit exit -> {
+                return 1;
+            }
+        }
+        return 0;
+    }
+
+    private void handleAddTask() {
+        Scanner scanner = new Scanner(System.in, "UTF-8");
+        System.out.print("課題名：");
+        String title = scanner.next();
+        System.out.print("授業名：");
+        String subject = scanner.next();
+        System.out.println("締め切り：");
+        String deadline = setDate();
+        addTask(new Task(0, title, subject, deadline, false));
+    }
+
+    private void handleCompleteTask() {
+        Scanner scanner = new Scanner(System.in, "UTF-8");
+        System.out.print("完了した課題のid：");
+        int finishedid = scanner.nextInt();
+        markTaskCompleted(finishedid);
+    }
+
+    private void handleDeleteTask() {
+        Scanner scanner = new Scanner(System.in, "UTF-8");
+        System.out.print("削除する課題のid：");
+        int deleteid = scanner.nextInt();
+        deleteTask(deleteid);
+    }
+
+    private void handleSort() {
+        Scanner scanner = new Scanner(System.in, "UTF-8");
+        List<Task> tasks = findAll();
+        TaskSorter sorter = new TaskSorter();
+        System.out.println("ソートの内容を選択してください：1：締め切り、2：完了状態、3：課題名、4：授業名");
+        int sortnum = scanner.nextInt();
+        switch (sortnum) {
+            case 1 -> {
+                sorter.setStrategy(new DeadlineSortStrategy());
+                List<Task> sortedByDeadline = sorter.sortTasks(tasks);
+                show(sortedByDeadline);
+            }
+            case 2 -> {
+                sorter.setStrategy(new CompletedSortStrategy());
+                List<Task> sortedByCompletion = sorter.sortTasks(tasks);
+                show(sortedByCompletion);
+            }
+            case 3 -> {
+                sorter.setStrategy(new TitleSortStrategy());
+                List<Task> sortedByTitle = sorter.sortTasks(tasks);
+                show(sortedByTitle);
+            }
+            case 4 -> {
+                sorter.setStrategy(new SubjectSortStrategy());
+                List<Task> sortedBySubject = sorter.sortTasks(tasks);
+                show(sortedBySubject);
+            }
+            default -> System.out.println("1から4の数字を入力してください");
+        }
+    }
+
     @Override
     public void close() {
         try {
