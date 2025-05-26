@@ -16,7 +16,7 @@ public class TaskDAOImpl implements TaskDAO{
 			 + "subject TEXT,"
 			 + "deadline TEXT,"
 			 + "completed BOOLEAN)");
-            stmt.close(); 
+           stmt.close(); 
     	} catch (SQLException e) {
 	    e.printStackTrace();
 	}
@@ -196,7 +196,7 @@ public class TaskDAOImpl implements TaskDAO{
 	}
     }
     
-	    public int select(Command command) {
+    public int select(Command command) {
         switch (command) {
             case AddTask add -> handleAddTask();
             case CompleteTask complete -> handleCompleteTask();
@@ -269,7 +269,6 @@ public class TaskDAOImpl implements TaskDAO{
     @Override
     public void close() {
         try {
-	    DBUtil.closeConnection();
             if (conn != null && !conn.isClosed()) {
                 conn.close(); 
             }

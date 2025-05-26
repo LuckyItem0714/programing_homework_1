@@ -12,7 +12,7 @@ public class TaskDAOImplTest {
 
     @Before
     public void setUp() throws SQLException {
-        DBUtil.setConnection("jdbc:sqlite::memory:"); 
+        DBUtil.setUrl("jdbc:sqlite::memory:"); 
         dao = new TaskDAOImpl();
     }
 
