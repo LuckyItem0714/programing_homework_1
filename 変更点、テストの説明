@@ -1,0 +1,46 @@
+主な変更
+DBUtil.javaとTaskDAOImplに、Connectionを静的変数で保持するようにしました。
+SQLiteのインメモリデータベースは接続が閉じられるとデータが消えるので、
+変更前のtry-with-resourceではテーブルが消えてしまいテストができなかったためです。
+
+この影響で、明示的な接続のクローズが必要になります。
+
+DBUtil.javaの変更
+・Connectionを静的変数で保持し、再利用するように変更。
+
+・setConnection(String newUrl):
+　接続先を動的に変更可能に(テスト用)
+
+・closeConnection():
+　接続をクローズするメソッドを追加
+
+TaskDAOImpl.javaの変更
+・executeQeryの導入:
+　findAll()と後述のfindAt()でクエリ実行と結果取得のロジックを共通化
+
+・findAt(int id):
+  指定したIDの課題を取得するメソッド
+
+・close():
+　接続をクローズするためのメソッド
+
+TaskDAOImplTest.java
+
+テスト環境
+@BeforeでインメモリDBをセットアップ
+@Afterで接続をクローズし、テスト間の依存を排除
+
+テストケース
+・testAddAndfindAll()
+課題を追加後、findAll()で全権取得し、件数と内容を検証
+
+・testFindAt()
+  特定IDの課題を取得し、正しいデータが返されるかを検証
+
+・testMarkTaskCompleted()
+　課題を完了状態に更新後、値が変更されているかを検証
+
+・testDeleteTask()
+  課題削除後、該当データが存在しないことを確認
+
+WIP

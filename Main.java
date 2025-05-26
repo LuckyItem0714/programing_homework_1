@@ -7,7 +7,8 @@ public class Main {
 		while (true) {
 			int check=dao.select();
 			if(check==1) {
-				break;
+			    dao.close();
+			    break;
 			}
 		}
 		
