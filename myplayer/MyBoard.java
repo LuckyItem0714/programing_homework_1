@@ -120,7 +120,10 @@ public class MyBoard implements Board, Cloneable {
       if (c != NONE) continue;
       for (var line : lines(k)) {
         var outflanking = outflanked(line, color);
-        if (outflanking.size() > 0) moves.add(k);
+        if (outflanking.size() > 0){//変更点。kがLegalなことがわかれば残りのチェックを飛ばす
+          moves.add(k);
+          break;
+        }
       }
     }
     return moves;
@@ -135,17 +138,17 @@ public class MyBoard implements Board, Cloneable {
     return lines;
   }
 
-  List<Move> outflanked(List<Integer> line, Color color) {//指定ライン上で相手の石を挟めるかを判定。挟める場合はその石の位置を Move として返す。
-
-    if (line.size() <= 1) return new ArrayList<Move>();
-    var flippables = new ArrayList<Move>();
+  List<Integer> outflanked(List<Integer> line, Color color) {//指定ライン上で相手の石を挟めるかを判定。挟める場合はその石の位置を Move として返す。
+//変更点。Moveのリストを返していたのを,Integerのリストを返すようにした。
+    if (line.size() <= 1) return new ArrayList<Integer>();
+    var flippables = new ArrayList<Integer>();
     for (int k: line) {
       var c = get(k);
       if (c == NONE || c == BLOCK) break;
       if (c == color) return flippables;
       flippables.add(new Move(k, color));
     }
-    return new ArrayList<Move>();
+    return new ArrayList<Integer>();
   }
 
   public MyBoard placed(Move move) {//指定した手を適用した新しい盤面を返す。挟める石をすべて反転させ、手を記録
@@ -160,7 +163,7 @@ public class MyBoard implements Board, Cloneable {
     var lines = b.lines(k);
     for (var line: lines) {
       for (var p: outflanked(line, color)) {
-        b.board[p.getIndex()] = color;
+        b.board[p] = color;//変更点。outflankedの変更の影響
       }
     }
     b.set(k, color);
