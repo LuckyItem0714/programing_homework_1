@@ -146,7 +146,7 @@ public class MyBoard implements Board, Cloneable {
       var c = get(k);
       if (c == NONE || c == BLOCK) break;
       if (c == color) return flippables;
-      flippables.add(new Move(k, color));
+      flippables.add(k);
     }
     return new ArrayList<Integer>();
   }
