@@ -16,6 +16,10 @@ public class MyGame {
     var board = new MyBoard();
     var game = new MyGame(board, player1, player2);
     game.play();
+
+    // 先攻時 87-10-3 勝率87%
+    // 後攻時 95-3-2 勝率95%
+    // 全体 182-13-5 勝率91%
   }
 
   //TIME_LIMIT_SECONDS: 各プレイヤーの持ち時間（秒）。
