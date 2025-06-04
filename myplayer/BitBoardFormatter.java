@@ -17,7 +17,7 @@ public class BitBoardFormatter {
     var legals = Map.of(BLACK, blacks, WHITE, whites);
 
     var buf = new StringBuilder("  ");
-    for (int k = 0; k < SIZE; k++) buf.append(Move.toColString(k));
+    for (int k6 = 0; k6 < SIZE; k6++) buf.append(Move.toColString(k6));
     buf.append("\n");
 
     for (int k6 = 0; k6 < SIZE * SIZE; k6++) {
@@ -36,7 +36,7 @@ public class BitBoardFormatter {
         buf.append(legal ? '.' : ' ');
       } else {
         var s = board.get(k8).toString();
-        if (move != null && k6 == move.getIndex()) s = s.toUpperCase();
+        if (move != null && k8 == move.getIndex()) s = s.toUpperCase();
         buf.append(s);
       }
 
@@ -56,6 +56,6 @@ public class BitBoardFormatter {
   }
 
   static List<String> toString(List<Integer> moves) {
-    return moves.stream().map(k -> Move.toIndexString(k)).toList();
+    return moves.stream().map(k -> Move.toIndexString(6 * (k / 8 - 1) + (k % 8) - 1)).toList();
   }
 }
