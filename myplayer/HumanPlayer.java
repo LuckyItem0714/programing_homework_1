@@ -31,17 +31,18 @@ public class HumanPlayer extends ap25.Player{
 	    this.board.set(i, board.get(i));
 	}
     }
+	
     boolean isBlack(){return getColor() == BLACK;}
 
     public Move think(Board board){
-	this.board = this.board.placed(board.getMove());//boardのこと
+	this.board = this.board.placed(board.getMove());
 	if(this.board.findNoPassLegalIndexes(getColor()).size() == 0){
 	    this.move = Move.ofPass(getColor());
 	} else{
 	    this.move = null;
 
 	    decide(board);
-	    this.move = this.move.colored(getColor());//いらない？
+	    this.move = this.move.colored(getColor());
 	}
 
 	this.board = this.board.placed(this.move);
