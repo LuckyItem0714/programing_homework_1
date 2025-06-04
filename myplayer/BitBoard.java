@@ -8,18 +8,32 @@ import java.util.List;
 import ap25.*;
 
 public class BitBoard implements Board, Cloneable {
-  static final long PLAYABLE_6x6 = //8x8盤面の中央に6x6盤面を埋め込む
-    (0x3FL << 9) | (0x3FL << 17) | (0x3FL << 25) | (0x3FL << 33) | (0x3FL << 41) | (0x3FL << 49);
+    //8x8盤面の中央に6x6盤面を埋め込む
+  private static final long PLAYABLE_6x6 =
+      (0x3FL << 9) | (0x3FL << 17) | (0x3FL << 25) | (0x3FL << 33) | (0x3FL << 41) | (0x3FL << 49);
   private static final int[] DIRECTIONS = new int[]{1, 7, 8, 9};//それぞれ、(W, E), (NE, SW), (N, S), (NW, SE)を表す。
+
+  private static final int[] IDX_6_TO_8 = new int[36];
+  private static final int[] IDX_8_TO_6 = new int[64];
+
+  static{
+    for(int i6 = 0; i6 < LENGTH; i6++){
+        int i8 = 8 * (i6 / 6 + 1) + (i6 % 6) + 1;
+        IDX_6_TO_8[i6] = i8;
+        IDX_8_TO_6[i8] = i6;
+    }
+  }
  
   private long black;//ビットボード
   private long white;
-  long occupied;//白または黒がおかれている場所を示す
-  long empty;//空いている場所を示す
-  Move move = Move.ofPass(NONE);
+  private long occupied;//白または黒がおかれている場所を示す
+  private long empty;//空いている場所を示す
+  private Move move = Move.ofPass(NONE);
 
   public BitBoard() {
-    init();
+    this.black = (1L << 27) | (1L << 36);
+    this.white = (1L << 28) | (1L << 35);
+    this.update();
   }
 
   private BitBoard(long black, long white, Move move) {
@@ -34,13 +48,7 @@ public class BitBoard implements Board, Cloneable {
     return new BitBoard(this.black, this.white, this.move);
   }
 
-  void init() {//初期化
-    this.black = (1L << 27) | (1L << 36);
-    this.white = (1L << 28) | (1L << 35);
-    this.update();
-  }
-
-  void update(){
+  private void update(){
     this.occupied = black | white;
     this.empty = (~this.occupied) & PLAYABLE_6x6;
   }
@@ -68,19 +76,12 @@ public class BitBoard implements Board, Cloneable {
     return this.move.isNone() ? BLACK : this.move.getColor().flipped();
   }
 
-  /*public void set(int k, Color color) {
-    long mask = 1L << k;
+  public void set(int k6, Color color) {
+    long mask = 1L << IDX_6_TO_8[k6];
     if((occupied & mask) != 0) { return; }
     if(color == BLACK) { black |= mask; }
     if(color == WHITE) { white |= mask; }
-  }*///使わない
-
-  public int idx6to8(int k6){
-    return 8 * (k6 / 6 + 1) + (k6 % 6) + 1;
-  }
-
-  public int idx8to6(int k8){
-    return 6 * (k8 / 8 - 1) + (k8 % 8) - 1;
+    update();
   }
 
   public boolean equals(Object otherObj) {
@@ -126,6 +127,7 @@ public class BitBoard implements Board, Cloneable {
       black = 0L;
       white = PLAYABLE_6x6;
     }
+    update();
   }
 
   public int score() {
@@ -140,7 +142,7 @@ public class BitBoard implements Board, Cloneable {
   public List<Move> findLegalMoves(Color color) {
     List<Move> moves = new ArrayList<>();//プリミティブ型にするほうが高速?
     for (int k8 : findLegalIndexes(color)) {
-        moves.add(new Move(idx8to6(k8), color));
+        moves.add(new Move(k8 >= 0 ? IDX_8_TO_6[k8] : k8, color));
     }
     return moves;
     /*return findLegalIndexes(color).stream()
@@ -201,10 +203,8 @@ public class BitBoard implements Board, Cloneable {
     if (move.isPass() || move.isNone())
       return b;
 
-    int k6 = move.getIndex();
-    int k8 = idx6to8(k6);
     Color color = move.getColor();
-    long mask = 1L << k8;
+    long mask = 1L << IDX_6_TO_8[move.getIndex()];
 
     if(color == BLACK){
       b.black |= mask;
@@ -216,11 +216,11 @@ public class BitBoard implements Board, Cloneable {
     long player = b.getBoard(color);
     long opponent = b.getBoard(color.flipped());
     long flips = 0L;
-    long flipsDir;
-    long cursor;
+    
     for(int d : DIRECTIONS){
-      flipsDir = 0L;
-      cursor = mask >>> d;
+      long flipsDir = 0L;
+      long cursor = mask >>> d;
+
       while((cursor & opponent) != 0){
         flipsDir |= cursor;
         cursor = cursor >>> d;
