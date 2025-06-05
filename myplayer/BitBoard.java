@@ -13,7 +13,7 @@ public class BitBoard implements Board, Cloneable {
       (0x3FL << 9) | (0x3FL << 17) | (0x3FL << 25) | (0x3FL << 33) | (0x3FL << 41) | (0x3FL << 49);
   private static final int[] DIRECTIONS = new int[]{1, 7, 8, 9};//それぞれ、(W, E), (NE, SW), (N, S), (NW, SE)を表す。
 
-  private static final int[] IDX_6_TO_8 = new int[36];
+  private static final int[] IDX_6_TO_8 = new int[36];//8x8盤と6x6盤の変換
   private static final int[] IDX_8_TO_6 = new int[64];
 
   static{
@@ -48,13 +48,13 @@ public class BitBoard implements Board, Cloneable {
     return new BitBoard(this.black, this.white, this.move);
   }
 
-  private void update(){
+  private void update(){//occuiedとemptyを更新
     this.occupied = black | white;
     this.empty = (~this.occupied) & PLAYABLE_6x6;
   }
 
-  public Color get(int k) {
-    long mask = 1L << k;
+  public Color get(int k6) {
+    long mask = 1L << IDX_6_TO_8[k6];
     if((black & mask) != 0) return BLACK;
     if((white & mask) != 0) return WHITE;
     return NONE;
@@ -76,16 +76,26 @@ public class BitBoard implements Board, Cloneable {
     return this.move.isNone() ? BLACK : this.move.getColor().flipped();
   }
 
-  public void set(int k6, Color color) {
-    long mask = 1L << IDX_6_TO_8[k6];
+  public void set(int k8, Color color) {//引数は8x8盤から見たインデックスで受けとる
+    long mask = 1L << k8;
     if((occupied & mask) != 0) { return; }
     if(color == BLACK) { black |= mask; }
     if(color == WHITE) { white |= mask; }
     update();
   }
 
+  private static void applyFlip(BitBoard board, long change, Color color) {
+    if (color == BLACK) {
+        board.black |= change;
+        board.white &= ~change;
+    } else {
+        board.black &= ~change;
+        board.white |= change;
+    }
+  }
+
   public boolean equals(Object otherObj) {
-      if (otherObj instanceof BitBoard) {//同値判定。盤面が同じなら、直前の手に関わらず同値とみなす
+    if (otherObj instanceof BitBoard) {//同値判定。盤面が同じなら、直前の手に関わらず同値とみなす
       var other = (BitBoard) otherObj;
       return black == other.getBlack() && white == other.getWhite();
     }
@@ -119,24 +129,15 @@ public class BitBoard implements Board, Cloneable {
 
   public void foul(Color color) {
     var winner = color.flipped();
-    if(winner == BLACK){
-      black = PLAYABLE_6x6;
-      white = 0L;
-    }
-    else{
-      black = 0L;
-      white = PLAYABLE_6x6;
-    }
+    applyFlip(this, PLAYABLE_6x6, winner);
     update();
   }
 
   public int score() {
     var bs = count(BLACK);
     var ws = count(WHITE);
-    var ns = LENGTH - bs - ws;
-    int score = (int) (bs - ws);
 
-    return score;
+    return (int) (bs - ws);
   }
 
   public List<Move> findLegalMoves(Color color) {
@@ -156,16 +157,16 @@ public class BitBoard implements Board, Cloneable {
   }
 
   List<Integer> findNoPassLegalIndexes(Color color) {
-    return bitmaskToIndexes8(getLegalMoves(color));
+    return bitmaskToIndices(findLegalMovesBitmask(color));
   }
     
-
-  long getLegalMoves(Color color){
+  long findLegalMovesBitmask(Color color){
     long legal = 0L;
     var player = getBoard(color);
     var opponent = getBoard(color.flipped());
 
-    for(int d : DIRECTIONS){       
+    for(int d : DIRECTIONS){
+        //右シフトで(W, NE, N, NW)を確認
         long candidates = (player >>> d) & opponent;
         long temp = candidates;
         while (temp != 0) {
@@ -174,6 +175,7 @@ public class BitBoard implements Board, Cloneable {
         }
         legal |= candidates >>> d;
 
+        //左シフトで(E, SW, S, SE)を確認
         candidates = (player << d) & opponent;
         temp = candidates;
         while (temp != 0) {
@@ -186,7 +188,7 @@ public class BitBoard implements Board, Cloneable {
     return legal & empty;
   }
 
-  private List<Integer> bitmaskToIndexes8(long mask){
+  private List<Integer> bitmaskToIndices(long mask){
     List<Integer> list = new ArrayList<>();
     while(mask != 0){
       int idx = Long.numberOfTrailingZeros(mask);
@@ -206,16 +208,9 @@ public class BitBoard implements Board, Cloneable {
     Color color = move.getColor();
     long mask = 1L << IDX_6_TO_8[move.getIndex()];
 
-    if(color == BLACK){
-      b.black |= mask;
-    }
-    else{
-      b.white |= mask;
-    }
-
     long player = b.getBoard(color);
     long opponent = b.getBoard(color.flipped());
-    long flips = 0L;
+    long flips = mask;//最後に反転
     
     for(int d : DIRECTIONS){
       long flipsDir = 0L;
@@ -240,15 +235,7 @@ public class BitBoard implements Board, Cloneable {
       }
     }
 
-    if(color == BLACK){
-      b.black |= flips;
-      b.white &= ~flips;
-    }
-    else{
-      b.black &= ~flips;
-      b.white |= flips;
-    }
-    
+    applyFlip(b, flips, color);    
     b.update();
 
     return b;

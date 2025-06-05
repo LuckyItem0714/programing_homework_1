@@ -27,7 +27,7 @@ public class BitBoardFormatter {
 
       if (col == 0) buf.append((row + 1) + "|");
 
-      if (board.get(k8) == NONE) {
+      if (board.get(k6) == NONE) {
         boolean legal = false;
         var b = blacks.contains(k8);
         var w = whites.contains(k8);
@@ -35,7 +35,7 @@ public class BitBoardFormatter {
         if (turn == WHITE && w) legal = true;
         buf.append(legal ? '.' : ' ');
       } else {
-        var s = board.get(k8).toString();
+        var s = board.get(k6).toString();
         if (move != null && k8 == move.getIndex()) s = s.toUpperCase();
         buf.append(s);
       }
@@ -56,6 +56,6 @@ public class BitBoardFormatter {
   }
 
   static List<String> toString(List<Integer> moves) {
-    return moves.stream().map(k -> Move.toIndexString(6 * (k / 8 - 1) + (k % 8) - 1)).toList();
+    return moves.stream().map(k6 -> Move.toIndexString(k6)).toList();
   }
 }
