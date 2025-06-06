@@ -36,7 +36,7 @@ public class BitBoardFormatter {
         buf.append(legal ? '.' : ' ');
       } else {
         var s = board.get(k6).toString();
-        if (move != null && k8 == move.getIndex()) s = s.toUpperCase();
+        if (move != null && k6 == move.getIndex()) s = s.toUpperCase();
         buf.append(s);
       }
 
