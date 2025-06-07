@@ -19,7 +19,7 @@ public class BlockedBitBoard extends BitBoard{
         super();
         long blocked = 0L;
         for(int k6 = 0; k6 < LENGTH; k6++){
-            int k8 = IDX_6_TO_8[k6];
+            int k8 = BitBoardUtil.IDX_6_TO_8[k6];
             Color color = board.get(k6);
             long mask = 1L << k8;
             if(color == BLOCK){
@@ -36,12 +36,12 @@ public class BlockedBitBoard extends BitBoard{
     @Override
     protected void update() {
         this.occupied  = black | white | BLOCKED;
-        this.empty = (~this.occupied) & PLAYABLE_6x6;
+        this.empty = (~this.occupied) & BitBoardUtil.PLAYABLE_6x6;
     }
 
     @Override
     public Color get(int k6){
-        long mask = 1L << IDX_6_TO_8[k6];
+        long mask = 1L << BitBoardUtil.IDX_6_TO_8[k6];
         if ((BLOCKED & mask) != 0){
             return BLOCK;
         }
