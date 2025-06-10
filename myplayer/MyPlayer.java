@@ -60,7 +60,7 @@ public class MyPlayer extends ap25.Player {
 			var newBoard = isBlack() ? this.board.clone() : this.board.flipped();
 			this.move = null;
 
-			maxSearch(newBoard, Float.NEGATIVE_INFINITY, Float.POSITIVE_INFINITY, 0);
+			maxSearch(newBoard, Integer.MIN_VALUE, Integer.MAX_VALUE, 0);
 
 			this.move = this.move.colored(getColor());
 		}
@@ -74,7 +74,7 @@ public class MyPlayer extends ap25.Player {
 	}
 
 	// ミニマックス探索（α-β枝切り）で最善手を評価。
-	float maxSearch(Board board, float alpha, float beta, int depth) {// 黒番（自分）の手番で最大化。深さ0のときに this.move に最善手を記録。
+	int maxSearch(Board board, int alpha, int beta, int depth) {// 黒番（自分）の手番で最大化。深さ0のときに this.move に最善手を記録。
 		if (isTerminal(board, depth))
 			return this.eval.value(board);
 
@@ -86,7 +86,7 @@ public class MyPlayer extends ap25.Player {
 
 		for (var move : moves) {
 			var newBoard = board.placed(move);
-			float v = minSearch(newBoard, alpha, beta, depth + 1);
+			int v = minSearch(newBoard, alpha, beta, depth + 1);
 
 			if (v > alpha) {
 				alpha = v;
@@ -101,7 +101,7 @@ public class MyPlayer extends ap25.Player {
 		return alpha;
 	}
 
-	float minSearch(Board board, float alpha, float beta, int depth) {// 白番（相手）の手番で最小化。
+	int minSearch(Board board, int alpha, int beta, int depth) {// 白番（相手）の手番で最小化。
 		if (isTerminal(board, depth))
 			return this.eval.value(board);
 
@@ -110,7 +110,7 @@ public class MyPlayer extends ap25.Player {
 
 		for (var move : moves) {
 			var newBoard = board.placed(move);
-			float v = maxSearch(newBoard, alpha, beta, depth + 1);
+			int v = maxSearch(newBoard, alpha, beta, depth + 1);
 			beta = Math.min(beta, v);
 			if (alpha >= beta)
 				break;

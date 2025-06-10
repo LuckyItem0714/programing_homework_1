@@ -18,7 +18,7 @@ class MyEval {// 盤面の評価を行うクラス。各マスに重みを与え
 		this.myColor = myColor;
 	}
 
-	public float value(Board board) {// ゲーム終了時はスコアに大きな重みをかけて返す。それ以外は、複合評価関数でスコアを計算。
+	public int value(Board board) {// ゲーム終了時はスコアに大きな重みをかけて返す。それ以外は、複合評価関数でスコアを計算。
 		if (board.isEnd()) {
 			return 1000000 * board.score();
 		}
