@@ -16,7 +16,7 @@ public class BitBoard implements Board, Cloneable {
   protected long white;
   protected long occupied;//白または黒がおかれている場所を示す
   protected long empty;//空いている場所を示す
-  private Move move = Move.ofPass(NONE);
+  Move move = Move.ofPass(NONE);
 
   public BitBoard() {//単純な初期化
     this.black = 0x1008000000L;

@@ -15,8 +15,8 @@ public class MyGame {
 		//先攻
 		for(int i=0;i<100;i++) {
 			var player1 = new myplayer.MyPlayer(BLACK);
-			var player2 = new myplayer.MyPlayerO(WHITE);
-			var board = new MyBoard();
+			var player2 = new myplayer.MyPlayer(WHITE);
+			var board = new BitBoard();
 			var game = new MyGame(board, player1, player2);
 			game.play(1);
 		}
