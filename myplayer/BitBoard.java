@@ -64,13 +64,12 @@ public class BitBoard implements Board, Cloneable {
     return this.move.isNone() ? BLACK : this.move.getColor().flipped();
   }
 
-  public void set(int k8, Color color) {
-    //k8に指定された色の石を置く
-    //引数k8は8x8盤から見たインデックスで受けとる
+  public void set(int k6, Color color) {
+    //k6に指定された色の石を置く
+
+    int k8 = BitBoardUtil.IDX_6_TO_8[k6];
     long mask = 1L << k8;
-    if((occupied & mask) != 0) { return; }
-    if(color == BLACK) { black |= mask; }
-    if(color == WHITE) { white |= mask; }
+    applyFlips(this, mask, color);
     update();
   }
 
@@ -78,7 +77,7 @@ public class BitBoard implements Board, Cloneable {
     if (color == BLACK) {
         board.black |= flips;
         board.white &= ~flips;
-    } else {
+    } else if(color == WHITE) {
         board.black &= ~flips;
         board.white |= flips;
     }
@@ -149,7 +148,7 @@ public class BitBoard implements Board, Cloneable {
   }
 
   List<Integer> findNoPassLegalIndexes(Color color) {
-    return BitBoardUtil.bitmaskToIndices(findLegalMovesBitmask(color));//long石をおける場所をlongからリストに変換して返す。
+    return BitBoardUtil.bitmaskToIndices(findLegalMovesBitmask(color));//石をおける場所をlongからリストに変換して返す。
   }
     
   long findLegalMovesBitmask(Color color){

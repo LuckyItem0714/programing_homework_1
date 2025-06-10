@@ -4,7 +4,7 @@ import ap25.*;
 import static ap25.Color.*;
 import java.util.ArrayList;
 import java.util.List;
-//TODO: 定数化
+//TODO: 定数化, 変換のキャッシュ検討
 public class BitBoardUtil{
         //8x8盤面の中央に6x6盤面を埋め込む
     public static final int BOARD_SIZE_6x6 = 36;

@@ -6,7 +6,7 @@ import java.util.Random;
 public class ZobristHasher{
     private static final long[][] zobristTable = new long[64][2];//[2][64]より効率的
     static{
-        Random rand = new Random();
+        Random rand = new Random(0);
         for(int k6 = 0; k6 < 36; k6++){
             int k8 = BitBoardUtil.IDX_6_TO_8[k6];
             zobristTable[k8][0] = rand.nextLong();
