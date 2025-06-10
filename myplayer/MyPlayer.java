@@ -60,7 +60,7 @@ public class MyPlayer extends ap25.Player {
 			var newBoard = isBlack() ? this.board.clone() : this.board.flipped();
 			this.move = null;
 
-			maxSearch(newBoard, Integer.MIN_VALUE, Integer.MAX_VALUE, 0);
+			negaScout(newBoard, Integer.MIN_VALUE, Integer.MAX_VALUE, 0);
 
 			this.move = this.move.colored(getColor());
 		}
@@ -73,8 +73,48 @@ public class MyPlayer extends ap25.Player {
 		 */
 	}
 
+	int negaAlfa(Board board, int alfa, int beta, int depth){
+		
+	}
+
+	int negaScout(Board board, float alpha, float beta, int depth) {
+    	if (isTerminal(board, depth)) return this.eval.value(board);
+
+    	var moves = board.findLegalMoves(BLACK);
+    	moves = order(moves);
+    	boolean first = true;
+	    int score = Integer.MIN_VALUE;
+
+    	for (var move : moves) {
+        	var newBoard = board.placed(move);
+        	int value;
+
+        	if (first) {
+            	value = -negaScout(newBoard.flipped(), -beta, -alpha, depth + 1);
+            	first = false;
+        	} else {
+            	// Null window search
+           		value = -negaScout(newBoard.flipped(), -alpha - 1, -alpha, depth + 1);
+            	if (alpha < value && value < beta) {
+                	// Re-search with full window
+                	value = -negaScout(newBoard.flipped(), -beta, -value, depth + 1);
+            	}
+        	}
+
+        	if (value > score) {
+            	score = value;
+            	if (depth == 0) this.move = move;
+        	}
+
+        	alpha = Math.max(alpha, value);
+        	if (alpha >= beta) break;
+    	}
+
+    	return score;
+  	}
+
 	// ミニマックス探索（α-β枝切り）で最善手を評価。
-	int maxSearch(Board board, int alpha, int beta, int depth) {// 黒番（自分）の手番で最大化。深さ0のときに this.move に最善手を記録。
+	/*int maxSearch(Board board, int alpha, int beta, int depth) {// 黒番（自分）の手番で最大化。深さ0のときに this.move に最善手を記録。
 		if (isTerminal(board, depth))
 			return this.eval.value(board);
 
@@ -117,7 +157,7 @@ public class MyPlayer extends ap25.Player {
 		}
 
 		return beta;
-	}
+	}*/
 
 	boolean isTerminal(Board board, int depth) {// ゲーム終了または探索深さ制限に達したかを判定。
 		return board.isEnd() || depth > this.depthLimit;
