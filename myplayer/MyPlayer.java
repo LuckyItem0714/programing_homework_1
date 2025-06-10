@@ -109,11 +109,11 @@ class MyEval {// 盤面の評価を行うクラス。各マスに重みを与え
 		return w1 * positionalValue(board,M) + w2 * lb + w3 * lw + w4 * nb + w5 * nw;
 	}
 
-	private float positionalValue(Board board,int[][] M) {
+	private int positionalValue(Board board,int[][] M) {
 		return (int) IntStream.range(0, LENGTH).mapToDouble(k -> score(board, k,M)).reduce(Double::sum).orElse(0);
 	}
 
-	private float score(Board board, int k, int[][] M) {// インデックス k のマスのスコアを計算。
+	private int score(Board board, int k, int[][] M) {// インデックス k のマスのスコアを計算。
 		return M[k / SIZE][k % SIZE] * board.get(k).getValue();
 	}
 }
