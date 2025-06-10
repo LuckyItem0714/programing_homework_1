@@ -73,28 +73,19 @@ public class MyPlayer extends ap25.Player {
 		 */
 	}
 
-	int negaAlfa(Board board, int alfa, int beta, int depth){
-		
-	}
 
 	int negaScout(Board board, float alpha, float beta, int depth) {
     	if (isTerminal(board, depth)) return this.eval.value(board);
 
+		int maxScore = Integer.MIN_VALUE;
     	var moves = board.findLegalMoves(BLACK);
     	moves = order(moves);
-    	boolean first = true;
-	    int score = Integer.MIN_VALUE;
 
+		int v = 
     	for (var move : moves) {
         	var newBoard = board.placed(move);
-        	int value;
 
-        	if (first) {
-            	value = -negaScout(newBoard.flipped(), -beta, -alpha, depth + 1);
-            	first = false;
-        	} else {
-            	// Null window search
-           		value = -negaScout(newBoard.flipped(), -alpha - 1, -alpha, depth + 1);
+       		value = -negaScout(newBoard.flipped(), -alpha - 1, -alpha, depth + 1);
             	if (alpha < value && value < beta) {
                 	// Re-search with full window
                 	value = -negaScout(newBoard.flipped(), -beta, -value, depth + 1);
