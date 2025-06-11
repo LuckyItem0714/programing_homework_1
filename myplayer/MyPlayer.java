@@ -73,35 +73,68 @@ public class MyPlayer extends ap25.Player {
 		 */
 	}
 
+	int negaAlpha(Board board, int alpha, int beta, int depth){
+		if(isTerminal(board, depth)){
+			return this.eval.value(board);
+		}
+		int maxScore = Integer.MIN_VALUE;
+		var moves = board.findLegalMoves(BLACK);
+		moves = order(moves);
 
-	int negaScout(Board board, float alpha, float beta, int depth) {
+		for(var move : moves){
+			var newBoard = board.placed(move);
+			
+			int v = -negaAlpha(newBoard.flipped(), -beta, -alpha, depth + 1);
+			if(v >= beta){
+				return v;
+			}
+			alpha = Math.max(v, alpha);
+			maxScore = Math.max(maxScore, v);
+		}
+		return maxScore;
+	}
+
+  	int negaScout(Board board, int alpha, int beta, int depth) {
     	if (isTerminal(board, depth)) return this.eval.value(board);
 
-		int maxScore = Integer.MIN_VALUE;
     	var moves = board.findLegalMoves(BLACK);
     	moves = order(moves);
+    	boolean first = true;
+    	int maxScore = Integer.MIN_VALUE;
+		if(depth == 0){
+			this.move = moves.get(0);
+		}
+		var newBoard = board.placed(moves.get(0));
 
-		int v = 
-    	for (var move : moves) {
-        	var newBoard = board.placed(move);
+		int v = -negaScout(newBoard.flipped(), -beta, -alpha, depth + 1);
+		if(v >= beta){
+			return v;
+		}
 
-       		value = -negaScout(newBoard.flipped(), -alpha - 1, -alpha, depth + 1);
-            	if (alpha < value && value < beta) {
-                	// Re-search with full window
-                	value = -negaScout(newBoard.flipped(), -beta, -value, depth + 1);
-            	}
+		alpha = Math.max(alpha, v);
+		maxScore = Math.max(maxScore, v);
+
+    	for (int i = 1; i < moves.size(); i++){
+        	newBoard = board.placed(moves.get(i)).flipped();
+            v = -negaAlpha(newBoard, -alpha - 1, -alpha, depth + 1);
+            if (v >= beta){
+				return v;
+			}
+			if(v > alpha){
+				alpha = v;
+				v = -negaScout(newBoard, -beta, -alpha, depth + 1);
+				if(v >= beta){
+					return v;
+				}
+				if(depth == 0){
+					this.move = moves.get(i);
+				}
         	}
-
-        	if (value > score) {
-            	score = value;
-            	if (depth == 0) this.move = move;
-        	}
-
-        	alpha = Math.max(alpha, value);
-        	if (alpha >= beta) break;
+        	alpha = Math.max(alpha, v);
+			maxScore = Math.max(maxScore, v);
     	}
 
-    	return score;
+    	return maxScore;
   	}
 
 	// ミニマックス探索（α-β枝切り）で最善手を評価。
