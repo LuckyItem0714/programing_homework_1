@@ -41,10 +41,7 @@ public class MyPlayer extends ap25.Player {
 	}
 
 	public void setBoard(Board board) {// 外部から渡された盤面を内部の BitBoard にコピー。
-		for (var i = 0; i < LENGTH; i++) {
-			this.board.set(i, board.get(i));
-		}
-		this.board.move = board.getMove(); // 最後の手もコピー
+		this.board = new BitBoard(board);
 	}
 
 	boolean isBlack() {
