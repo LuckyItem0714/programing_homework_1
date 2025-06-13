@@ -2,6 +2,8 @@ package p25x13;
 
 import static ap25.Board.*;
 import static ap25.Color.*;
+import java.util.stream.Collectors;
+
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -128,7 +130,7 @@ public class OurPlayer extends ap25.Player {
 	MyEval eval;
 	int depthLimit;
 	Move move;
-	OurBoard board;
+	BitBoard board;
 
 	public OurPlayer(Color color) {// デフォルト名 "2513"、評価関数、深さ2で初期化。
 		this(MY_NAME, color, new MyEval(color), 2);
@@ -138,18 +140,15 @@ public class OurPlayer extends ap25.Player {
 		super(name, color);
 		this.eval = eval;
 		this.depthLimit = depthLimit;
-		this.board = new OurBoard();
+		this.board = new BitBoard();
 	}
 
 	public OurPlayer(String name, Color color, int depthLimit) {
 		this(name, color, new MyEval(color), depthLimit);
 	}
 
-	public void setBoard(Board board) {// 外部から渡された盤面を内部の OurBoard にコピー。
-		for (var i = 0; i < LENGTH; i++) {
-			this.board.set(i, board.get(i));
-		}
-		this.board.move = board.getMove(); // 最後の手もコピー
+	public void setBoard(Board board) {// 外部から渡された盤面を内部の BitBoard にコピー。
+		this.board=new BitBoard(board);
 	}
 
 	boolean isBlack() {
@@ -165,7 +164,9 @@ public class OurPlayer extends ap25.Player {
 			var newBoard = isBlack() ? this.board.clone() : this.board.flipped();
 			this.move = null;
 
-      var legals = this.board.findNoPassLegalIndexes(getColor());
+      
+var legals = this.board.findLegalMoves(getColor()).stream().map(Move::getIndex).collect(Collectors.toList());
+
       
 			maxSearch(newBoard, Float.NEGATIVE_INFINITY, Float.POSITIVE_INFINITY, 0);
 
@@ -253,7 +254,7 @@ public class OurPlayer extends ap25.Player {
 	List<Move> order(List<Move> moves) {
 		List<ScoredMove> scoredMoves = new ArrayList<>();
 		for (Move move : moves) {
-			OurBoard nextBoard = board.clone().placed(move);
+			BitBoard nextBoard = board.clone().placed(move);
 			float value = eval.value(nextBoard);
 			scoredMoves.add(new ScoredMove(move, value));
 		}

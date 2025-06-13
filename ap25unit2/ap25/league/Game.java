@@ -56,6 +56,11 @@ public class Game {
       // check
       move = check(turn, move, error);
       moves.add(move);
+    if (move == null || !board.findLegalMoves(turn).contains(move)) {
+    System.err.println("Illegal move detected: " + move);
+    System.err.println("Legal moves: " + board.findLegalMoves(turn));
+    System.err.println("Board:\n" + board);
+}
 
       // update board
       if (move.isLegal()) {

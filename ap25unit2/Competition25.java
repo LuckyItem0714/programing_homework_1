@@ -9,10 +9,10 @@ class Competition25 {
   public static void main(String args[]) {
     Function<Color, Player[]> builder = (Color color) -> {
       return new Player[] {
+          new ap25.league.RandomPlayer(color),
+          new ap25.league.RandomPlayer(color),
+          new ap25.league.RandomPlayer(color),
           new p25x13.OurPlayer(color),
-          new ap25.league.RandomPlayer(color),
-          new ap25.league.RandomPlayer(color),
-          new ap25.league.RandomPlayer(color),
       };
     };
 
