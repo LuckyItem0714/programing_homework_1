@@ -11,7 +11,7 @@ public class BitBoard implements Board, Cloneable {
 //6x6盤で見たインデックスはk6, 8x8盤で見たインデックスはk8と表す。
 
   private static final int[] DIRECTIONS = new int[]{1, 7, 8, 9};//それぞれ、(W, E), (NE, SW), (N, S), (NW, SE)を表す。
- 
+  private final long BLOCKED;
   protected long black;//ビットボード。盤外は常に0を保つ
   protected long white;
   protected long occupied;//白または黒がおかれている場所を示す
@@ -21,23 +21,47 @@ public class BitBoard implements Board, Cloneable {
   public BitBoard() {//単純な初期化
     this.black = 0x1008000000L;
     this.white = 0x810000000L;
+    this.BLOCKED = 0x0L;
     this.update();
   }
 
-  private BitBoard(long black, long white, Move move) {//コピー用
+  private BitBoard(long black, long white, long blocked, Move move) {//コピー用
     this.black = black;
     this.white = white;
+    this.BLOCKED = blocked;
     this.update();
     this.move = move;
   }
 
+  public BitBoard(Board board){
+    long blocked = 0x0L;
+    for(int k6 = 0; k6 < LENGTH; k6++){
+      int k8 = BitBoardUtil.IDX_6_TO_8[k6];
+      Color color = board.get(k6);
+      long mask = 1L << k8;
+      switch(color){
+        case BLACK:
+          black |= mask;
+          break;
+        case WHITE:
+          white |= mask;
+          break;
+        case BLOCK:
+          blocked |= mask;
+      }
+    }
+    BLOCKED = blocked;
+    update();
+    this.move = board.getMove();
+  }
+
   @Override
   public BitBoard clone() {
-    return new BitBoard(this.black, this.white, this.move);
+    return new BitBoard(this.black, this.white, this.BLOCKED, this.move);
   }
 
   protected void update(){//occuiedとemptyを更新
-    this.occupied = black | white;
+    this.occupied  = black | white | BLOCKED;
     this.empty = (~this.occupied) & BitBoardUtil.PLAYABLE_6x6;
   }
 
@@ -45,6 +69,7 @@ public class BitBoard implements Board, Cloneable {
     long mask = 1L << BitBoardUtil.IDX_6_TO_8[k6];
     if((black & mask) != 0) return BLACK;
     if((white & mask) != 0) return WHITE;
+    if((BLOCKED & mask) != 0) return BLOCK;
     return NONE;
   }
 
@@ -62,6 +87,10 @@ public class BitBoard implements Board, Cloneable {
 
   public Color getTurn() {//次の手番を返す。黒が初手。以降は交互
     return this.move.isNone() ? BLACK : this.move.getColor().flipped();
+  }
+
+  public boolean noBlock(){
+    return BLOCKED == 0L;
   }
 
   public void set(int k6, Color color) {
@@ -106,6 +135,10 @@ public class BitBoard implements Board, Cloneable {
     return Long.bitCount(getBitBoard(color));
   }
 
+  public int countEmpties(){
+    return Long.bitCount(empty);
+  }
+
   public boolean isEnd() {//終了判定
     var lbs = findNoPassLegalIndexes(BLACK);
     var lws = findNoPassLegalIndexes(WHITE);
@@ -137,8 +170,6 @@ public class BitBoard implements Board, Cloneable {
         moves.add(new Move(k8 >= 0 ? BitBoardUtil.IDX_8_TO_6[k8] : k8, color));
     }
     return moves;
-    /*return findLegalIndexes(color).stream()
-        .map(k8 -> new Move(idx8to6(k8), color)).toList();*/
   }
 
   private List<Integer> findLegalIndexes(Color color){
