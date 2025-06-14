@@ -16,7 +16,8 @@ public class ZobristHasher{
 
     public static long computeZobrist(long black, long white) {
         long hash = 0;
-        for (int k8 = 0; k8 < 64; k8++) {
+        for (int k6 = 0; k6 < 36; k6++) {
+            int k8 = BitBoardUtil.IDX_6_TO_8[k6];
             long mask = 1L << k8;
             if ((black & mask) != 0) hash ^= zobristTable[k8][0];
             if ((white & mask) != 0) hash ^= zobristTable[k8][1];

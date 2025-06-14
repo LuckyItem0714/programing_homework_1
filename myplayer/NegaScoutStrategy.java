@@ -20,20 +20,14 @@ public class NegaScoutStrategy{
     final Map<Long, TTEntry> currentTable = new HashMap<>();
     Map<Long, TTEntry> previousTable = new HashMap<>();
     final TTAccessor currentRawTTA = new RawTTAccessor(currentTable);
-    final TTAccessor previousRawTTA = new RawTTAccessor(previousTable);
+    TTAccessor previousRawTTA = new RawTTAccessor(previousTable);
 
     public NegaScoutStrategy(){}
 
     public Move search(BitBoard board){
-        List<Move> moves = board.findLegalMoves(BLACK);
-        if(moves.size() == 1){//着手可能位置が0または1の場合. 
-            return moves.get(0);
-        }
-        currentTable.clear();
-        previousTable.clear();
-
         for(int searchDepth = START_DEPTH; searchDepth <= DEPTH_LIMIT; searchDepth++){
             previousTable = new HashMap<>(currentTable);
+            previousRawTTA = new RawTTAccessor(previousTable);
             currentTable.clear();
             negaScout(board, Integer.MIN_VALUE, Integer.MAX_VALUE, searchDepth, currentRawTTA);
         }

@@ -45,9 +45,16 @@ public class OurPlayer extends ap25.Player {
 
 	public Move think(Board board) {
 		this.board = this.board.placed(board.getMove());
+		List<Move> moves = board.findLegalMoves(getColor());
+		Move move;
+		if(moves.size() == 1){//着手可能位置が0または1の場合.
+			move = moves.get(0);
+			this.board = this.board.placed(move);
+			return move;
+		}
 
 		var newBoard = isBlack() ? this.board.clone() : this.board.flipped();
-		Move move = strategy.search(newBoard);
+		move = strategy.search(newBoard);
 		move = move.colored(getColor());
 
 		this.board = this.board.placed(move);
