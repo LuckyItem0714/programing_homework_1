@@ -10,13 +10,13 @@ public class RawTTAccessor implements TTAccessor{
         this.table = table;
     }
 
-    public void store(long black, long white, TTEntry entry){
-        long hash = ZobristHasher.computeZobrist(black, white);
+    public void store(BitBoard board, TTEntry entry){
+        long hash = ZobristHasher.computeZobrist(board.getBlack(), board.getWhite());
         table.put(hash, entry);
     }
 
-    public TTEntry lookup(long black, long white){
-        long hash = ZobristHasher.computeZobrist(black, white);
+    public TTEntry lookup(BitBoard board){
+        long hash = ZobristHasher.computeZobrist(board.getBlack(), board.getWhite());
         return table.get(hash);
     }
 }

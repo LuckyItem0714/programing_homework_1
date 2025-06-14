@@ -15,13 +15,15 @@ class MyEval {// 盤面の評価を行うクラス。各マスに重みを与え
 	public MyEval() {
 	}
 
-	public int value(Board board) {// ゲーム終了時はスコアに大きな重みをかけて返す。それ以外は、複合評価関数でスコアを計算。
+	public int value(BitBoard board) {// ゲーム終了時はスコアに大きな重みをかけて返す。それ以外は、複合評価関数でスコアを計算。
 		if (board.isEnd()) {
 			return 1000000 * board.score();
 		}
 		;
 		int[][] M;
-		int stoneCount = board.count(BLACK) + board.count(WHITE);
+		int nb = board.count(BLACK);
+		int nw = board.count(WHITE);
+		int stoneCount = nb + nw;
 
 		if (stoneCount < 12) {
 			M = new int[][] { 
@@ -50,9 +52,7 @@ class MyEval {// 盤面の評価を行うクラス。各マスに重みを与え
 		}
 
 		int lb = board.findLegalMoves(BLACK).size();
-		int lw = board.findLegalMoves(WHITE.flipped()).size();
-		int nb = board.count(BLACK);
-		int nw = board.count(WHITE);
+		int lw = board.findLegalMoves(WHITE).size();
 
 		int w1 = 2; // 盤面の重み
 		int w2 = 4; // 自分の合法手の数

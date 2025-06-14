@@ -212,6 +212,15 @@ public class BitBoard implements Board, Cloneable {
     return legal & empty;//候補位置と空きマスの合併をとる
   }
 
+  public List<Pair<Move, BitBoard>> findLegalMoveResults(){//黒の各合法手についてそれを打ってflipした盤面のリストを返す。
+      List<Move> moves = findLegalMoves(BLACK);
+      List<Pair<Move, BitBoard>> result = new ArrayList<>();
+      for(Move move : moves){
+        result.add(new Pair<>(move, placed(move).flipped()));
+      }
+      return result;
+  }
+
   public BitBoard placed(Move move) {
     //Moveを実行した後の盤面を返す
     // TODO: 時間があればfor文の内部を共通化して、プロファイリングにより効率の良い実装を選定する

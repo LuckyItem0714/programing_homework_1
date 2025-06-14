@@ -16,7 +16,6 @@ public class OurPlayer extends ap25.Player {
 	 *
 	 */
 	static final String MY_NAME = "MY24";
-	Move move;
 	BitBoard board;
 	NegaScoutStrategy strategy;
 
@@ -48,11 +47,11 @@ public class OurPlayer extends ap25.Player {
 		this.board = this.board.placed(board.getMove());
 
 		var newBoard = isBlack() ? this.board.clone() : this.board.flipped();
-		this.move = strategy.search(newBoard);
-		this.move = this.move.colored(getColor());
+		Move move = strategy.search(newBoard);
+		move = move.colored(getColor());
 
-		this.board = this.board.placed(this.move);
-		return this.move;
+		this.board = this.board.placed(move);
+		return move;
 		/*
 		 * プレイヤーの思考メソッド。次の手を決定します。 処理の流れ： 直前の手を placed() で盤面に反映。 合法手がなければ PASS を返す。
 		 * 自分が白番なら盤面を反転（白視点で探索）。 maxSearch() を呼び出して最善手を探索。 結果の手を自分の色に戻して返す。
