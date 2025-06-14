@@ -17,7 +17,7 @@ public class MyGame {
 			var player1 = new myplayer.OurPlayer(BLACK);
 			var player2 = new myplayer.OurPlayer(WHITE);
 			var board = new BitBoard();
-			var game = new MyGame2(board, player1, player2);
+			var game = new MyGame(board, player1, player2);
 			game.play(1);
 		}
 		//後攻
