@@ -21,7 +21,7 @@ public class BitBoard implements Board, Cloneable {
   public BitBoard() {//単純な初期化
     this.black = 0x1008000000L;
     this.white = 0x810000000L;
-    this.BLOCKED = 0x0L;
+    this.BLOCKED = 0x100000L;
     this.update();
   }
 

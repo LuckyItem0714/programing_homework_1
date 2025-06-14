@@ -14,10 +14,10 @@ public class MyGame {
 		// を初期化し、MyGame インスタンスを作成して play() を実行。
 		//先攻
 		for(int i=0;i<100;i++) {
-			var player1 = new myplayer.MyPlayer(BLACK);
-			var player2 = new myplayer.MyPlayer(WHITE);
+			var player1 = new myplayer.OurPlayer(BLACK);
+			var player2 = new myplayer.OurPlayer(WHITE);
 			var board = new BitBoard();
-			var game = new MyGame(board, player1, player2);
+			var game = new MyGame2(board, player1, player2);
 			game.play(1);
 		}
 		//後攻
