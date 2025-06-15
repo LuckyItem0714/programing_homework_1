@@ -55,9 +55,9 @@ public class OurPlayer extends ap25.Player {
 		}
 		
 		var newBoard = isBlack() ? this.board.clone() : this.board.flipped();
-		/*if(SearchUtil.isEndgame(newBoard)){
-			strategy = new PerfectPlayStrategy(strategy.currentTable);
-		}*/
+		if(SearchUtil.isEndgame(newBoard)){
+			strategy = new WinLossStrategy();
+		}
 		move = strategy.search(newBoard);
 		move = move.colored(getColor());
 
