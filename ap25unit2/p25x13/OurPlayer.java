@@ -4,11 +4,13 @@ import static ap25.Board.*;
 import static ap25.Color.*;
 import java.util.stream.Collectors;
 
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.IntStream;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.Arrays;
 
 import ap25.*;
 
@@ -19,6 +21,31 @@ class MyEval {// 盤面の評価を行うクラス。各マスに重みを与え
 
 	public MyEval(Color myColor) {
 		this.myColor = myColor;
+	}
+
+	// 確定石の数をカウントするメソッドを追加
+	private int countStableDiscs(Board board, Color color) {
+		int count = 0;
+		for (int i = 0; i < LENGTH; i++) {
+			if (isStable(board, i, color)) {
+				count++;
+			}
+		}
+		return count;
+	}
+
+	// 簡易的な安定石判定（角とその周辺の連続石のみを対象）
+	private boolean isStable(Board board, int index, Color color) {
+		int row = index / SIZE;
+		int col = index % SIZE;
+
+		// 角の位置
+		if ((row == 0 || row == SIZE - 1) && (col == 0 || col == SIZE - 1)) {
+			return board.get(index) == color;
+		}
+
+		// より高度な安定石判定はここに追加可能
+		return false;
 	}
 
 	public float value(Board board) {// ゲーム終了時はスコアに大きな重みをかけて返す。それ以外は、複合評価関数でスコアを計算。
@@ -45,19 +72,26 @@ class MyEval {// 盤面の評価を行うクラス。各マスに重みを与え
 		int lb = myMoves.size();
 		int lw = oppMoves.size();
 
+		int stableMy = countStableDiscs(board, myColor);
+		int stableOpp = countStableDiscs(board, myColor.flipped());
+
 		int nb = 0, nw = 0;
 		for (int i = 0; i < LENGTH; i++) {
 			var c = board.get(i);
-			if (c == myColor) nb++;
-			else if (c == myColor.flipped()) nw++;
+			if (c == myColor)
+				nb++;
+			else if (c == myColor.flipped())
+				nw++;
 		}
-
 
 		float w1 = 1.0f; // 盤面の重み
 		float w2 = 2.0f; // 自分の合法手の数
 		float w3 = -2.0f; // 相手の合法手の数
 		float w4 = 0.0f; // 自分の石の数
 		float w5 = 0.0f; // 相手の石の数
+
+		float w6 = 10.0f; // 確定石の重み（調整可能）
+		float w7 = -10.0f;
 
 		if (myColor == BLACK) {
 			if (nb + nw >= 13 && nb + nw < 25) {
@@ -66,12 +100,16 @@ class MyEval {// 盤面の評価を行うクラス。各マスに重みを与え
 				w3 = -5.0f; // 相手の合法手の数
 				w4 = 1.0f; // 自分の石の数
 				w5 = -1.0f; // 相手の石の数
+				w6 = 0;
+				w7 = 0;
 			} else if (nb + nw < 25) {
 				w1 = 1.0f; // 盤面の重み
 				w2 = 2.0f; // 自分の合法手の数
 				w3 = -2.0f; // 相手の合法手の数
 				w4 = 3.0f; // 自分の石の数
 				w5 = -3.0f; // 相手の石の数
+				w6 = 3;
+				w7 = -3;
 			}
 		} else {
 			if (nb + nw >= 4 && nb + nw < 10) {
@@ -80,34 +118,45 @@ class MyEval {// 盤面の評価を行うクラス。各マスに重みを与え
 				w3 = 1.0f;
 				w4 = 1.0f;
 				w5 = -1.0f;
+				w6 = -0.0f;
+				w7 = -0.0f;
 			} else if (nb + nw >= 10 && nb + nw < 12) {
-				w1 = 10.0f; // 盤面の重み
+				w1 = 2.0f; // 盤面の重み
 				w2 = 0.0f; // 自分の合法手の数
 				w3 = -0.0f; // 相手の合法手の数
 				w4 = 0.0f; // 自分の石の数
 				w5 = -0.0f; // 相手の石の数
+				w6 = 0;
+				w7 = 0;
 			} else if (nb + nw >= 12 && nb + nw < 13) {
-				w1 = 0.0f; // 盤面の重み
+				w1 = 1.0f; // 盤面の重み
 				w2 = 3.0f; // 自分の合法手の数
-				w3 = -3.0f; // 相手の合法手の数
+				w3 = -4.0f; // 相手の合法手の数
 				w4 = 1.0f; // 自分の石の数
 				w5 = -1.0f; // 相手の石の数
+				w6 = 1;
+				w7 = -1;
 			} else if (nb + nw >= 13 && nb + nw < 25) {
-				w1 = 1.5f; // 盤面の重み
+				w1 = 1.0f; // 盤面の重み
 				w2 = 0.0f; // 自分の合法手の数
 				w3 = -3.0f; // 相手の合法手の数
 				w4 = 2.0f; // 自分の石の数
-				w5 = -2.0f; // 相手の石の数
+				w5 = -3.0f; // 相手の石の数
+				w6 = 1;
+				w7 = -1;
 			} else if (nb + nw >= 25 && nb + nw < 36) {
-				w1 = 2.0f; // 盤面の重み
+				w1 = 1.0f; // 盤面の重み
 				w2 = 1.0f; // 自分の合法手の数
 				w3 = -1.0f; // 相手の合法手の数
 				w4 = 5.0f; // 自分の石の数
 				w5 = -5.0f; // 相手の石の数
+				w6 = 0;
+				w7 = 0;
 			}
 		}
 
-		return w1 * positionalValue(board, M) + w2 * lb + w3 * lw + w4 * nb + w5 * nw;
+		return w1 * positionalValue(board, M) + w2 * lb + w3 * lw + w4 * nb + w5 * nw + w6 * stableMy + w7 * stableOpp;
+
 	}
 
 	private float positionalValue(Board board, float[][] M) {
@@ -119,126 +168,119 @@ class MyEval {// 盤面の評価を行うクラス。各マスに重みを与え
 	}
 }
 
-public class OurPlayer extends ap25.Player {
-	/*
-	 *
-	 * MyEval eval: 評価関数。 int depthLimit: 探索の深さ制限。 Move move: 現在選んでいる手。 MyBoard
-	 * board: 内部で保持する盤面。
-	 *
-	 */
+public class OurPlayer extends Player {
 	static final String MY_NAME = "2513";
 	MyEval eval;
 	int depthLimit;
 	Move move;
 	BitBoard board;
 
-	public OurPlayer(Color color) {// デフォルト名 "2513"、評価関数、深さ2で初期化。
-		this(MY_NAME, color, new MyEval(color), 2);
+	// Transposition table to cache board evaluations
+	Map<String, Float> transpositionTable = new HashMap<>();
+
+	public OurPlayer(Color color) {
+		this(MY_NAME, color, new MyEval(color), 6);
 	}
 
-	public OurPlayer(String name, Color color, MyEval eval, int depthLimit) {// 名前、色、評価関数、探索深さを指定して初期化。
+	public OurPlayer(String name, Color color, MyEval eval, int depthLimit) {
 		super(name, color);
 		this.eval = eval;
 		this.depthLimit = depthLimit;
 		this.board = new BitBoard();
 	}
 
-	public OurPlayer(String name, Color color, int depthLimit) {
-		this(name, color, new MyEval(color), depthLimit);
-	}
-
-	public void setBoard(Board board) {// 外部から渡された盤面を内部の BitBoard にコピー。
-		this.board=new BitBoard(board);
+	public void setBoard(Board board) {
+		this.board = new BitBoard(board);
 	}
 
 	boolean isBlack() {
-		return getColor() == BLACK;
+		return getColor() == Color.BLACK;
 	}
 
 	public Move think(Board board) {
 		this.board = this.board.placed(board.getMove());
-
-		if (this.board.findNoPassLegalIndexes(getColor()).size() == 0) {
+		if (this.board.findNoPassLegalIndexes(getColor()).isEmpty()) {
 			this.move = Move.ofPass(getColor());
 		} else {
 			var newBoard = isBlack() ? this.board.clone() : this.board.flipped();
 			this.move = null;
-
-      
-var legals = this.board.findLegalMoves(getColor()).stream().map(Move::getIndex).collect(Collectors.toList());
-
-      
-			maxSearch(newBoard, Float.NEGATIVE_INFINITY, Float.POSITIVE_INFINITY, 0);
-
+			maxSearchPVS(newBoard, -Float.MAX_VALUE, Float.MAX_VALUE, 0);
 			this.move = this.move.colored(getColor());
-			if (legals.contains(this.move.getIndex()) == false) {
-		        System.out.println("**************");
-		        System.out.println(legals);
-		        System.out.println(this.move);
-		        System.out.println(this.move.getIndex());
-		        System.out.println(this.board);
-		        System.out.println(newBoard);
-		        System.exit(0);
-		        maxSearch(newBoard, Float.NEGATIVE_INFINITY, Float.POSITIVE_INFINITY, 0);
-		      }
 		}
-
 		this.board = this.board.placed(this.move);
 		return this.move;
-		/*
-		 * プレイヤーの思考メソッド。次の手を決定します。 処理の流れ： 直前の手を placed() で盤面に反映。 合法手がなければ PASS を返す。
-		 * 自分が白番なら盤面を反転（白視点で探索）。 maxSearch() を呼び出して最善手を探索。 結果の手を自分の色に戻して返す。
-		 */
 	}
 
-	// ミニマックス探索（α-β枝切り）で最善手を評価。
-	float maxSearch(Board board, float alpha, float beta, int depth) {// 黒番（自分）の手番で最大化。深さ0のときに this.move に最善手を記録。
+	float maxSearchPVS(Board board, float alpha, float beta, int depth) {
 		if (isTerminal(board, depth))
-			return this.eval.value(board);
-
-		var moves = board.findLegalMoves(BLACK);
-		moves = order(moves);
-
-		if (depth == 0)
-			this.move = moves.get(0);
-
+			return evaluate(board);
+		var moves = order(board.findLegalMoves(Color.BLACK));
+		boolean first = true;
 		for (var move : moves) {
 			var newBoard = board.placed(move);
-			float v = minSearch(newBoard, alpha, beta, depth + 1);
-
-			if (v > alpha) {
-				alpha = v;
+			float score;
+			if (first) {
+				score = minSearchPVS(newBoard, alpha, beta, depth + 1);
+				first = false;
+			} else {
+				score = minSearchPVS(newBoard, alpha, alpha + 1, depth + 1);
+				if (score > alpha && score < beta) {
+					score = minSearchPVS(newBoard, alpha, beta, depth + 1);
+				}
+			}
+			if (score > alpha) {
+				alpha = score;
 				if (depth == 0)
 					this.move = move;
 			}
-
 			if (alpha >= beta)
 				break;
 		}
-
 		return alpha;
 	}
 
-	float minSearch(Board board, float alpha, float beta, int depth) {// 白番（相手）の手番で最小化。
+	float minSearchPVS(Board board, float alpha, float beta, int depth) {
 		if (isTerminal(board, depth))
-			return this.eval.value(board);
-
-		var moves = board.findLegalMoves(WHITE);
-		moves = order(moves);
-
+			return evaluate(board);
+		var moves = order(board.findLegalMoves(Color.WHITE));
+		boolean first = true;
 		for (var move : moves) {
 			var newBoard = board.placed(move);
-			float v = maxSearch(newBoard, alpha, beta, depth + 1);
-			beta = Math.min(beta, v);
+			float score;
+			if (first) {
+				score = maxSearchPVS(newBoard, alpha, beta, depth + 1);
+				first = false;
+			} else {
+				score = maxSearchPVS(newBoard, beta - 1, beta, depth + 1);
+				if (score > alpha && score < beta) {
+					score = maxSearchPVS(newBoard, alpha, beta, depth + 1);
+				}
+			}
+			if (score < beta) {
+				beta = score;
+			}
 			if (alpha >= beta)
 				break;
 		}
-
 		return beta;
 	}
 
-	boolean isTerminal(Board board, int depth) {// ゲーム終了または探索深さ制限に達したかを判定。
-		return board.isEnd() || depth > this.depthLimit;
+	boolean isTerminal(Board board, int depth) {
+		return board.isEnd() || depth >= depthLimit;
+	}
+
+	float evaluate(Board board) {
+		String key = hashBoard(board);
+		if (transpositionTable.containsKey(key)) {
+			return transpositionTable.get(key);  // float return
+		}
+		float value = eval.value(board);
+		transpositionTable.put(key, value);  // float value
+		return value;
+	}
+
+	String hashBoard(Board board) {
+		return Arrays.toString(board.toString().getBytes());
 	}
 
 	class ScoredMove {
@@ -258,17 +300,7 @@ var legals = this.board.findLegalMoves(getColor()).stream().map(Move::getIndex).
 			float value = eval.value(nextBoard);
 			scoredMoves.add(new ScoredMove(move, value));
 		}
-
-		// 評価値の高い順にソート（降順）
 		scoredMoves.sort((a, b) -> Float.compare(b.score, a.score));
-
-		// Move だけを取り出して返す
-		List<Move> ordered = new ArrayList<>();
-		for (ScoredMove sm : scoredMoves) {
-			ordered.add(sm.move);
-		}
-		return ordered;
+		return scoredMoves.stream().map(sm -> sm.move).collect(Collectors.toList());
 	}
-
 }
-
