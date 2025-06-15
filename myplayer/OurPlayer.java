@@ -17,7 +17,7 @@ public class OurPlayer extends ap25.Player {
 	 */
 	static final String MY_NAME = "MY24";
 	BitBoard board;
-	NegaScoutStrategy strategy;
+	Strategy strategy;
 
 	public OurPlayer(Color color) {// デフォルト名 "MY24"、評価関数、深さ2で初期化。
 		this(MY_NAME, color);
@@ -29,7 +29,8 @@ public class OurPlayer extends ap25.Player {
 
 	public void setBoard(Board board) {// 外部から渡された盤面を内部の BitBoard にコピー。
 		this.board = new BitBoard(board);
-        strategy = new NegaScoutStrategy();
+		strategy = new NegaScoutStrategy();
+        //strategy = new NegaScoutStrategy(color);
         //AdaptiveNegaScoutが完成したら差し替え
 		/*if(this.board.noBlock()){
 			strategy = new AdaptiveNegaScout();
@@ -52,8 +53,11 @@ public class OurPlayer extends ap25.Player {
 			this.board = this.board.placed(move);
 			return move;
 		}
-
+		
 		var newBoard = isBlack() ? this.board.clone() : this.board.flipped();
+		/*if(SearchUtil.isEndgame(newBoard)){
+			strategy = new PerfectPlayStrategy(strategy.currentTable);
+		}*/
 		move = strategy.search(newBoard);
 		move = move.colored(getColor());
 

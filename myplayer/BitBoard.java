@@ -93,14 +93,14 @@ public class BitBoard implements Board, Cloneable {
     return BLOCKED == 0L;
   }
 
-  public void set(int k6, Color color) {
+  /*public void set(int k6, Color color) {
     //k6に指定された色の石を置く
 
     int k8 = BitBoardUtil.IDX_6_TO_8[k6];
     long mask = 1L << k8;
     applyFlips(this, mask, color);
     update();
-  }
+  }*/
 
   private static void applyFlips(BitBoard board, long flips, Color color) {//ビットボードのflipsをcolorに置き換え
     if (color == BLACK) {
@@ -139,10 +139,14 @@ public class BitBoard implements Board, Cloneable {
     return Long.bitCount(empty);
   }
 
+  public int countNoPassLegalMoves(Color color){//着手可能位置の数
+    return Long.bitCount(findNoPassLegalMovesBitmask(color));
+  }
+
   public boolean isEnd() {//終了判定
-    var lbs = findNoPassLegalIndexes(BLACK);
-    var lws = findNoPassLegalIndexes(WHITE);
-    return lbs.size() == 0 && lws.size() == 0;
+    var lbs = findNoPassLegalMovesBitmask(BLACK);
+    var lws = findNoPassLegalMovesBitmask(WHITE);
+    return lbs == 0L && lws == 0L;
   }
 
   public Color winner() {//終了状態なら勝者のColorを返す。
@@ -179,10 +183,10 @@ public class BitBoard implements Board, Cloneable {
   }
 
   List<Integer> findNoPassLegalIndexes(Color color) {
-    return BitBoardUtil.bitmaskToIndices(findLegalMovesBitmask(color));//石をおける場所をlongからリストに変換して返す。
+    return BitBoardUtil.bitmaskToIndices(findNoPassLegalMovesBitmask(color));//石をおける場所をlongからリストに変換して返す。
   }
     
-  long findLegalMovesBitmask(Color color){
+  long findNoPassLegalMovesBitmask(Color color){
     //着手可能位置をビット列で返す
     // TODO: 時間があればfor文の内部を共通化して、プロファイリングにより効率の良い実装を選定する
     long legal = 0L;

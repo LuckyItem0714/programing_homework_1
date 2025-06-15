@@ -1,4 +1,4 @@
-package myplayer;
+/*package myplayer;
 
 import static ap25.Color.*;
 
@@ -45,4 +45,4 @@ public class AdaptiveNegaScout extends NegaScoutStrategy{
         }
         return super.negaAlpha(board, alpha, beta, depth, tt);
     }
-}
+}*/

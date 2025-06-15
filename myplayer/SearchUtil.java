@@ -9,6 +9,7 @@ public class SearchUtil{
 	}
 
 	public static boolean isEndgame(BitBoard board){
-		return board.countEmpties() <= ENDGAME_THRESHOLD;
+		int emptiesCount = board.countEmpties();
+		return emptiesCount == ENDGAME_THRESHOLD || emptiesCount == ENDGAME_THRESHOLD - 1;
 	}
 }

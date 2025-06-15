@@ -8,21 +8,27 @@ import java.util.Set;
 import java.util.HashSet;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Collections;
 
 import ap25.*;
 
-public class NegaScoutStrategy{
+public class NegaScoutStrategy implements Strategy{
     static final int CASHE_HIT_BONUS = 500;
     static final int START_DEPTH = 4;//反復深化の最初
     static final int DEPTH_LIMIT = 7;//反復深化の最後
 
-    MyEval eval = new MyEval();
+    Eval eval;
     final Map<Long, TTEntry> currentTable = new HashMap<>();
     Map<Long, TTEntry> previousTable = new HashMap<>();
     final TTAccessor currentRawTTA = new RawTTAccessor(currentTable);
     TTAccessor previousRawTTA = new RawTTAccessor(previousTable);
 
-    public NegaScoutStrategy(){}
+    /*public NegaScoutStrategy(Color color){
+        eval = new MyEval(color);
+    }*/
+    public NegaScoutStrategy(){
+        eval = new MyEval();
+    }
 
     public Move search(BitBoard board){
         for(int searchDepth = START_DEPTH; searchDepth <= DEPTH_LIMIT; searchDepth++){
@@ -31,7 +37,7 @@ public class NegaScoutStrategy{
             currentTable.clear();
             negaScout(board, Integer.MIN_VALUE, Integer.MAX_VALUE, searchDepth, currentRawTTA);
         }
-        return currentRawTTA.lookup(board).bestMove;
+        return currentRawTTA.lookup(board).bestMove();
     }
 
     int negaScout(BitBoard board, int alpha, int beta, int depth, TTAccessor tta) {
@@ -41,15 +47,15 @@ public class NegaScoutStrategy{
         int l = Integer.MIN_VALUE;
         TTEntry entry = tta.lookup(board);
         if (entry != null){
-            switch(entry.type){
+            switch(entry.type()){
                 case UPPERBOUND:
-                    u = entry.value;
+                    u = entry.value();
                     break;
                 case LOWERBOUND:
-                    l = entry.value;
+                    l = entry.value();
                     break;
                 case EXACT:
-                    return entry.value;
+                    return entry.value();
             }
         }
         alpha = Math.max(alpha, l);
@@ -57,7 +63,7 @@ public class NegaScoutStrategy{
 
         var moveBoardPairs = order(board);
 
-        var newBoard = moveBoardPairs.get(0).second;//フリップ済み
+        var newBoard = moveBoardPairs.get(0).second;
         int v = -negaScout(newBoard, -beta, -alpha, depth - 1, tta);
         if(v >= beta){
             if(v > l){
@@ -113,15 +119,15 @@ public class NegaScoutStrategy{
         int l = Integer.MIN_VALUE;
         TTEntry entry = tta.lookup(board);
         if (entry != null) {
-            switch (entry.type) {
+            switch (entry.type()) {
                 case LOWERBOUND: 
-                    l = entry.value;
+                    l = entry.value();
                     break;
                 case UPPERBOUND:
-                    u = entry.value;
+                    u = entry.value();
                     break;
                  case EXACT:
-                    return entry.value;
+                    return entry.value();
             }
         }
 
@@ -161,8 +167,8 @@ public class NegaScoutStrategy{
         List<MoveScoreBoard> scoredBoards = new ArrayList<>();
 
         TTEntry entry = previousRawTTA.lookup(board);
-        BitBoard bestBoard = (entry != null && entry.bestMove != null)
-            ? board.placed(entry.bestMove).flipped()
+        BitBoard bestBoard = (entry != null && entry.bestMove() != null)
+            ? board.placed(entry.bestMove()).flipped()
             : null;
 
         for(Pair<Move, BitBoard> pair : moveBoardPairs){
@@ -171,7 +177,7 @@ public class NegaScoutStrategy{
 
             int score;
             if(childEntry != null){
-                score = CASHE_HIT_BONUS - childEntry.value;
+                score = CASHE_HIT_BONUS - childEntry.value();
             }else{
                 score = -eval.value(newBoard);
             }
@@ -179,38 +185,24 @@ public class NegaScoutStrategy{
             scoredBoards.add(new MoveScoreBoard(pair.first, newBoard, score));
         }
 
-        scoredBoards.sort((a, b) ->
-            Integer.compare(b.score, a.score));
+        scoredBoards.sort(Collections.reverseOrder());
 
         List<Pair<Move, BitBoard>> ordered = new ArrayList<>();
-        Set<Integer> seenBoards = new HashSet<>();
+        Set<Integer> seen = new HashSet<>();
         if(bestBoard != null){
             for(MoveScoreBoard msb : scoredBoards){
-                if(msb.board.equals(bestBoard)){
-                    ordered.add(new Pair<>(msb.move, msb.board));
-                    seenBoards.add(msb.board.hashCode());
+                if(msb.board().equals(bestBoard)){
+                    ordered.add(new Pair<>(msb.move(), msb.board()));
+                    seen.add(msb.board().hashCode());
                     break;
                 }
             }
         }
         for(MoveScoreBoard msb : scoredBoards){
-            int hash = msb.board.hashCode();
-            if(!seenBoards.contains(hash)){
-                ordered.add(new Pair<>(msb.move, msb.board));
-                seenBoards.add(hash);
+            if(seen.add(msb.board().hashCode())){
+                ordered.add(new Pair<>(msb.move(), msb.board()));
             }
         }
         return ordered;
-    }
-
-    static class MoveScoreBoard{
-        Move move;
-        BitBoard board;
-        int score;
-        MoveScoreBoard(Move move, BitBoard board, int score){
-            this.move = move;
-            this.board = board;
-            this.score = score;
-        }
     }
 }
