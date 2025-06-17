@@ -159,9 +159,13 @@ class MyEval {// 盤面の評価を行うクラス。各マスに重みを与え
 
 	}
 
-	private float positionalValue(Board board, float[][] M) {
-		return (float) IntStream.range(0, LENGTH).mapToDouble(k -> score(board, k, M)).reduce(Double::sum).orElse(0);
-	}
+	private float positionalValue(Board board, float[][] weights) {
+        float sum = 0;
+        for (int k = 0; k < LENGTH; k++) {
+            sum += weights[k / SIZE][k % SIZE] * board.get(k).getValue();
+        }
+        return sum;
+    }
 
 	private float score(Board board, int k, float[][] M) {// インデックス k のマスのスコアを計算。
 		return M[k / SIZE][k % SIZE] * board.get(k).getValue();
