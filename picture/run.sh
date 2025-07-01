@@ -25,23 +25,22 @@ for image in $1/test/*.ppm; do
             convert -equalize "${image}" "${name}"
             ;;
         "level6")
-            
-            for angle in 0 90 180; do
-                tempname = "imgproc/"'basename'
-                rotation=0
+            convert "${image}" "${name}"
+            for angle in 0 90 180 270; do
                 echo $bname:
                 for template in $1/*.ppm; do
-                echo `basename ${template}`
-                if [ angle = 0 ]
-                then
-                    ./matching $name "${template}" $rotation 1.5 cp 
-                    x=1
-                else
-                    ./matching $name "${template}" $rotation 1.5 p 
-                fi
+                    tempname="imgproc/"`basename ${template}`
+                    convert -rotate $angle "${template}" "${tempname}"
+                    echo `basename ${template}`
+                    if [ $angle -eq 0 ]
+                    then
+                        ./matching $name "${tempname}" $angle 1.5 cp 
+                        x=1
+                    else
+                        ./matching $name "${tempname}" $angle 1.5 p 
+                    fi
                 done
                 echo ""
-            convert -rotate 270 "${image}" "${name}"
             done
             ;;
         "level7")
@@ -55,19 +54,21 @@ for image in $1/test/*.ppm; do
             convert "${image}" "${name}"  # デフォルトは何もしない
             ;;
     esac
-    
-    rotation=0
-    echo $bname:
-    for template in $1/*.ppm; do
-	echo `basename ${template}`
-	if [ $x = 0 ]
-	then
-	    ./matching $name "${template}" $rotation 1.5 cp 
-	    x=1
-	else
-	    ./matching $name "${template}" $rotation 1.5 p 
-	fi
-    done
-    echo ""
+    case $1 in
+        "level1"|"level2"|"level3"|"level4")
+            rotation=0
+            echo $bname:
+            for template in $1/*.ppm; do
+	        echo `basename ${template}`
+	        if [     $x = 0 ]
+	        then
+	            ./matching $name "${template}" $rotation 1.5 cp 
+	            x=1
+	        else
+	            ./matching $name "${template}" $rotation 1.5 p 
+	        fi
+            done
+            echo ""
+    esac
 done
 wait
