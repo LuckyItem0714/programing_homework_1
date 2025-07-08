@@ -16,7 +16,7 @@ for image in $1/test/*.ppm; do
             convert -blur 2x6 "${image}" "${name}"
             ;;
         "level3")
-            convert "${image}" "${name}"
+            convert -contrast "${image}" "${name}"
             ;;
         "level4")
             convert "${image}" "${name}"
@@ -69,24 +69,25 @@ for image in $1/test/*.ppm; do
                     if [ $1 = "level5" ]
                     then
 
-                        convert -resize "$i"% "${template}" "${tempname}"
+                        convert -resize "$i"% "${template}" "${tempname}" &
                     else
                         if [ $i = 0 ]
                         then
-                            convert "${template}" "${tempname}"
+                            convert "${template}" "${tempname}" &
                         else
-                            convert -rotate $i "${template}" "${tempname}"
+                            convert -rotate $i "${template}" "${tempname}" &
                         fi
                         rotation=$i
                     fi
                     echo `basename ${template}`
                     if [ $x = 0 ];
                     then
-                        ./matching $name "${tempname}" $rotation 1.5 cp 
+                        ./matching $name "${tempname}" $rotation 1.5 cp &
                         x=1
                     else
-                        ./matching $name "${tempname}" $rotation 1.5 p 
+                        ./matching $name "${tempname}" $rotation 1.5 p &
                     fi
+                wait
                 done
                 echo ""
             done
@@ -94,7 +95,6 @@ for image in $1/test/*.ppm; do
     esac
 
 done
-if
 for result_file in result/*.txt; do
 
     awk 'NR == 1 || $7 < min { min = $7; line = $0 } END { print line }' "$result_file" > tmp.txt
