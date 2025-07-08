@@ -349,7 +349,7 @@ int main(int argc, char **argv)
 	{
 		templateMatchingColorTransparent(img, template, &result, &distance);
 	}
-	else if (strstr(template_file, level6) != NULL)
+	/*else if (strstr(template_file, level6) != NULL)
 	{
 		// 4つの角度でテンプレートマッチングを実行し、それぞれの結果を出力
 		int rotations[] = {0, 90, 180, 270};
@@ -401,7 +401,7 @@ int main(int argc, char **argv)
 			printf("out: %s", output_name_img);
 			writePXM(output_name_img, img);
 		}
-	}
+	}*/
 	else
 	{
 		templateMatchingColor(img, template, &result, &distance);
