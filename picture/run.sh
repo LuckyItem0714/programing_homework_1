@@ -26,22 +26,6 @@ for image in $1/test/*.ppm; do
             ;;
         "level6")
             convert "${image}" "${name}"
-            #for angle in 0 90 180 270; do
-            #    echo $bname:
-            #    for template in $1/*.ppm; do
-            #        tempname="imgproc/"`basename ${template}`
-            #        convert -rotate $angle "${template}" "${tempname}"
-            #        echo `basename ${template}`
-            #        if [ $angle -eq 0 ]
-            #        then
-            #            ./matching $name "${tempname}" $angle 1.5 cp 
-            #            x=1
-            #        else
-            #            ./matching $name "${tempname}" $angle 1.5 p 
-            #        fi
-            #    done
-            #    echo ""
-            #done
             ;;
         "level7")
             convert -sharpen 0x1 "${image}" "${name}"
@@ -54,19 +38,57 @@ for image in $1/test/*.ppm; do
             convert "${image}" "${name}"  # デフォルトは何もしない
             ;;
     esac
+
+    rotation=0
     case $1 in
-        "level1"|"level2"|"level3"|"level4"|"level6")
-            rotation=0
+        "level1"|"level2"|"level3"|"level4")
             echo $bname:
             for template in $1/*.ppm; do
 	        echo `basename ${template}`
-	        if [     $x = 0 ]
+	        if [ $x = 0 ]
 	        then
 	            ./matching $name "${template}" $rotation 1.5 cp 
 	            x=1
 	        else
 	            ./matching $name "${template}" $rotation 1.5 p 
 	        fi
+            done
+            echo ""
+            ;;
+        "level5"|"level6")
+            if [ $1 = "level5" ]
+            then
+                itre="50 100 200"
+            else
+                itre="0 90 180 270"
+            fi
+            for i in ${itre}; do
+                echo $bname:
+                for template in $1/*.ppm; do
+                    tempname="imgproc/"`basename ${template}`
+                    if [ $1 = "level5" ]
+                    then
+
+                        convert -resize "$i"% "${template}" "${tempname}"
+                    else
+                        if [ $i = 0 ]
+                        then
+                            convert "${template}" "${tempname}"
+                        else
+                            convert -rotate $i "${template}" "${tempname}"
+                        fi
+                        rotation=$i
+                    fi
+                    echo `basename ${template}`
+                    if [ $x = 0 ];
+                    then
+                        ./matching $name "${tempname}" $rotation 1.5 cp 
+                        x=1
+                    else
+                        ./matching $name "${tempname}" $rotation 1.5 p 
+                    fi
+                done
+                echo ""
             done
             echo ""
     esac
