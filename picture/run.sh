@@ -44,14 +44,14 @@ for image in $1/test/*.ppm; do
         "level1"|"level2"|"level3"|"level4")
             echo $bname:
             for template in $1/*.ppm; do
-	        echo `basename ${template}`
-	        if [ $x = 0 ]
-	        then
-	            ./matching $name "${template}" $rotation 1.5 cp 
-	            x=1
-	        else
-	            ./matching $name "${template}" $rotation 1.5 p 
-	        fi
+	            echo `basename ${template}`
+	            if [ $x = 0 ]
+	            then
+	                ./matching $name "${template}" $rotation 1.5 cp 
+	                x=1
+	            else
+	                ./matching $name "${template}" $rotation 1.5 p 
+	            fi
             done
             echo ""
             ;;
@@ -63,40 +63,59 @@ for image in $1/test/*.ppm; do
                 itre="0 90 180 270"
             fi
             for i in ${itre}; do
-                echo $bname:
+                echo "$bname: (scale/rot: $i)"
                 for template in $1/*.ppm; do
-                    tempname="imgproc/"`basename ${template}`
-                    if [ $1 = "level5" ]
-                    then
-
-                        convert -resize "$i"% "${template}" "${tempname}" &
-                    else
-                        if [ $i = 0 ]
-                        then
-                            convert "${template}" "${tempname}" &
+                    if [ ! -f "$template" ]; then continue; fi
+                    (
+                        tempname="imgproc/"`basename ${template}`
+                        if [ "$1" = "level5" ]; then
+                            convert -resize "$i"% "${template}" "${tempname}"
                         else
-                            convert -rotate $i "${template}" "${tempname}" &
+                            if [ $i = 0 ]; then
+                                convert "${template}" "${tempname}"
+                            else
+                                convert -rotate $i "${template}" "${tempname}"
+                            fi
                         fi
+                    ) &
+                done
+                wait
+                for template in $1/*.ppm; do
+                    if [ ! -f "$template" ]; then continue; fi
+                    tempname="imgproc/"`basename ${template}`
+                    if [ $1 = "level6" ]; then
                         rotation=$i
                     fi
+                    
                     echo `basename ${template}`
-                    if [ $x = 0 ];
-                    then
-                        ./matching $name "${tempname}" $rotation 1.5 cp &
+                    if [ $x = 0 ]; then
+                        ./matching $name "${tempname}" $rotation 1.5 cp
                         x=1
                     else
-                        ./matching $name "${tempname}" $rotation 1.5 p &
+                        ./matching $name "${tempname}" $rotation 1.5 p
                     fi
-                wait
                 done
                 echo ""
             done
             echo ""
+            ;;
+        *)
+            echo $bname:
+            for template in $1/*.ppm; do
+                echo `basename ${template}`
+	        if [ $x = 0 ]; then
+	            ./matching $name "${template}" $rotation 1.5 cp 
+	            x=1
+	        else
+	            ./matching $name "${template}" $rotation 1.5 p 
+	        fi
+            done
+            echo ""
+            ;;
     esac
-
 done
-for result_file in result/*.txt; do
 
+for result_file in result/*.txt; do
     awk 'NR == 1 || $7 < min { min = $7; line = $0 } END { print line }' "$result_file" > tmp.txt
     mv tmp.txt "$result_file"
     echo "$result_file done"
