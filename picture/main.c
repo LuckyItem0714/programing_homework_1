@@ -1,9 +1,11 @@
+
+
 #include "imageUtil.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <limits.h>
-#include <float.h>
+//#include <omp.h>
 
 void templateMatchingGray(Image *src, Image *template, Point *position, double *distance)
 {
@@ -295,7 +297,7 @@ int main(int argc, char **argv)
 	int rotation = atoi(argv[3]);
 	double threshold = atof(argv[4]);
 	const char* level4 = "level4";
-	const char* level6 = "level6";
+	printf("rotation -> %d\n", rotation);
 
 	char output_name_base[256];
 	char output_name_txt[256];
@@ -328,10 +330,6 @@ int main(int argc, char **argv)
 
 	Point result;
 	double distance = 0.0;
-	if (strstr(template_file, level6) == NULL)
-	{
-		printf("rotation -> %d\n", rotation);
-	}
 
 	if (isGray && img->channel == 3)
 	{
@@ -349,51 +347,22 @@ int main(int argc, char **argv)
 	{
 		templateMatchingColorTransparent(img, template, &result, &distance);
 	}
-	/*else if (strstr(template_file, level6) != NULL)
+	else
 	{
-		// 4つの角度でテンプレートマッチングを実行し、それぞれの結果を出力
-		int rotations[] = {0, 90, 180, 270};
-		
-		for (int i = 0; i < 4; i++)
+		templateMatchingColor(img, template, &result, &distance);
+	}
+
+	if (distance < threshold)
+	{
+		writeResult(output_name_txt, getBaseName(template_file), result, template->width, template->height, rotation, distance);
+		if (isPrintResult)
 		{
-			Point temp_result;
-			double temp_distance;
-			
-			printf("rotation -> %d\n", rotations[i]);
-			templateMatchingColorWithRotation(img, template, &temp_result, &temp_distance, rotations[i]);
-			
-			// 回転時のテンプレートサイズを計算
-			int output_width = template->width;
-			int output_height = template->height;
-			if (rotations[i] == 90 || rotations[i] == 270) {
-				output_width = template->height;
-				output_height = template->width;
-			}
-			
-			if (temp_distance < threshold)
-			{
-				writeResult(output_name_txt, getBaseName(template_file), temp_result, output_width, output_height, rotations[i], temp_distance);
-				if (isPrintResult)
-				{
-					printf("[Found    ] %s %d %d %d %d %d %f\n", getBaseName(template_file), temp_result.x, temp_result.y, output_width, output_height, rotations[i], temp_distance);
-				}
-				if (isWriteImageResult)
-				{
-					drawRectangle(img, temp_result, output_width, output_height);
-				}
-			}
-			else
-			{
-				if (isPrintResult)
-				{
-					printf("[Not found] %s %d %d %d %d %d %f\n", getBaseName(template_file), temp_result.x, temp_result.y, output_width, output_height, rotations[i], temp_distance);
-				}
-			}
+			printf("[Found    ] %s %d %d %d %d %d %f\n", getBaseName(template_file), result.x, result.y, template->width, template->height, rotation, distance);
 		}
-		
-		// 画像出力は最後に一度だけ実行
 		if (isWriteImageResult)
 		{
+			drawRectangle(img, result, template->width, template->height);
+
 			if (img->channel == 3)
 				strcat(output_name_img, ".ppm");
 			else if (img->channel == 1)
@@ -401,52 +370,12 @@ int main(int argc, char **argv)
 			printf("out: %s", output_name_img);
 			writePXM(output_name_img, img);
 		}
-	}*/
+	}
 	else
 	{
-		templateMatchingColor(img, template, &result, &distance);
-		
-		if (distance < threshold)
-		{	
-			// 回転時のテンプレートサイズを計算
-			int output_width = template->width;
-			int output_height = template->height;
-			if (rotation == 90 || rotation == 270) {
-				output_width = template->height;
-				output_height = template->width;
-			}
-			
-			writeResult(output_name_txt, getBaseName(template_file), result, output_width, output_height, rotation, distance);
-			if (isPrintResult)
-			{
-				printf("[Found    ] %s %d %d %d %d %d %f\n", getBaseName(template_file), result.x, result.y, output_width, output_height, rotation, distance);
-			}
-			if (isWriteImageResult)
-			{
-				drawRectangle(img, result, output_width, output_height);
-
-				if (img->channel == 3)
-					strcat(output_name_img, ".ppm");
-				else if (img->channel == 1)
-					strcat(output_name_img, ".pgm");
-				printf("out: %s", output_name_img);
-				writePXM(output_name_img, img);
-			}
-		}
-		else
+		if (isPrintResult)
 		{
-			// 回転時のテンプレートサイズを計算
-			int output_width = template->width;
-			int output_height = template->height;
-			if (rotation == 90 || rotation == 270) {
-				output_width = template->height;
-				output_height = template->width;
-			}
-			
-			if (isPrintResult)
-			{
-				printf("[Not found] %s %d %d %d %d %d %f\n", getBaseName(template_file), result.x, result.y, output_width, output_height, rotation, distance);
-			}
+			printf("[Not found] %s %d %d %d %d %d %f\n", getBaseName(template_file), result.x, result.y, template->width, template->height, rotation, distance);
 		}
 	}
 
