@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <limits.h>
-//#include <omp.h>
+#include <float.h>
 
 void templateMatchingGray(Image *src, Image *template, Point *position, double *distance)
 {
@@ -189,17 +189,17 @@ void getRotatedPixel(int i, int j, int width, int height, int rotation, int *rot
             *rot_i = i;
             *rot_j = j;
             break;
-        case 90:  // 90度回転
-            *rot_i = height - 1 - j;
-            *rot_j = i;
+        case 90:  // 90度回転（時計回り）
+            *rot_i = j;
+            *rot_j = width - 1 - i;
             break;
         case 180: // 180度回転
             *rot_i = width - 1 - i;
             *rot_j = height - 1 - j;
             break;
-        case 270: // 270度回転
-            *rot_i = j;
-            *rot_j = width - 1 - i;
+        case 270: // 270度回転（反時計回り90度）
+            *rot_i = height - 1 - j;
+            *rot_j = i;
             break;
     }
 }
@@ -216,60 +216,52 @@ void getRotatedSize(int width, int height, int rotation, int *new_width, int *ne
     }
 }
 
-// 回転対応テンプレートマッチング
-void templateMatchingColorWithRotation(Image *src, Image *template, Point *position, double *distance, int *best_rotation)
+// 特定の角度での回転テンプレートマッチング
+void templateMatchingColorWithRotation(Image *src, Image *template, Point *position, double *distance, int rotation)
 {
     if (src->channel != 3 || template->channel != 3) {
         fprintf(stderr, "src and/or template image is not a color image.\n");
         return;
     }
     
-    int global_min_distance = INT_MAX;
-    int best_x = 0, best_y = 0, best_rot = 0;
+    int min_distance = INT_MAX;
+    int best_x = 0, best_y = 0;
+    int rot_width, rot_height;
     
-    // 0度、90度、180度、270度の4つの回転角度で試行
-    int rotations[] = {0, 90, 180, 270};
+    // 回転後のテンプレートサイズを取得
+    getRotatedSize(template->width, template->height, rotation, &rot_width, &rot_height);
     
-    for (int rot_idx = 0; rot_idx < 4; rot_idx++) {
-        int rotation = rotations[rot_idx];
-        int rot_width, rot_height;
-        
-        // 回転後のテンプレートサイズを取得
-        getRotatedSize(template->width, template->height, rotation, &rot_width, &rot_height);
-        
-        // 元画像上でスライディングウィンドウ
-        for (int y = 0; y <= (src->height - rot_height); y++) {
-            for (int x = 0; x <= (src->width - rot_width); x++) {
-                int distance = 0;
-                
-                // SSD計算（回転したテンプレート）
-                for (int j = 0; j < rot_height; j++) {
-                    for (int i = 0; i < rot_width; i++) {
-                        // 元画像のピクセル位置
-                        int src_pt = 3 * ((y + j) * src->width + (x + i));
-                        
-                        // 回転したテンプレートの対応するピクセル位置を計算
-                        int template_i, template_j;
-                        getRotatedPixel(i, j, rot_width, rot_height, rotation, &template_i, &template_j);
-                        
-                        // 元のテンプレート座標系でのピクセル位置
-                        int template_pt = 3 * (template_j * template->width + template_i);
-                        
-                        // RGB各チャンネルの差の二乗を計算
-                        int r = (src->data[src_pt + 0] - template->data[template_pt + 0]);
-                        int g = (src->data[src_pt + 1] - template->data[template_pt + 1]);
-                        int b = (src->data[src_pt + 2] - template->data[template_pt + 2]);
-                        distance += (r * r + g * g + b * b);
-                    }
+    // 元画像上でスライディングウィンドウ
+    for (int y = 0; y <= (src->height - rot_height); y++) {
+        for (int x = 0; x <= (src->width - rot_width); x++) {
+            int distance = 0;
+            
+            // SSD計算（回転したテンプレート）
+            for (int j = 0; j < rot_height; j++) {
+                for (int i = 0; i < rot_width; i++) {
+                    // 元画像のピクセル位置
+                    int src_pt = 3 * ((y + j) * src->width + (x + i));
+                    
+                    // 回転したテンプレートの対応するピクセル位置を計算
+                    int template_i, template_j;
+                    getRotatedPixel(i, j, rot_width, rot_height, rotation, &template_i, &template_j);
+                    
+                    // 元のテンプレート座標系でのピクセル位置
+                    int template_pt = 3 * (template_j * template->width + template_i);
+                    
+                    // RGB各チャンネルの差の二乗を計算
+                    int r = (src->data[src_pt + 0] - template->data[template_pt + 0]);
+                    int g = (src->data[src_pt + 1] - template->data[template_pt + 1]);
+                    int b = (src->data[src_pt + 2] - template->data[template_pt + 2]);
+                    distance += (r * r + g * g + b * b);
                 }
-                
-                // 最小距離の更新
-                if (distance < global_min_distance) {
-                    global_min_distance = distance;
-                    best_x = x;
-                    best_y = y;
-                    best_rot = rotation;
-                }
+            }
+            
+            // 最小距離の更新
+            if (distance < min_distance) {
+                min_distance = distance;
+                best_x = x;
+                best_y = y;
             }
         }
     }
@@ -277,8 +269,7 @@ void templateMatchingColorWithRotation(Image *src, Image *template, Point *posit
     // 結果を返す
     position->x = best_x;
     position->y = best_y;
-    *distance = sqrt(global_min_distance) / (template->width * template->height);
-    *best_rotation = best_rot;
+    *distance = sqrt(min_distance) / (template->width * template->height);
 }
 
 // test/beach3.ppm template /airgun_women_syufu.ppm 0 0.5 cwp
@@ -337,8 +328,10 @@ int main(int argc, char **argv)
 
 	Point result;
 	double distance = 0.0;
-	int best_rotation = 0;
-	printf("rotation -> %d\n", rotation);
+	if (strstr(template_file, level6) == NULL)
+	{
+		printf("rotation -> %d\n", rotation);
+	}
 
 	if (isGray && img->channel == 3)
 	{
@@ -358,25 +351,49 @@ int main(int argc, char **argv)
 	}
 	else if (strstr(template_file, level6) != NULL)
 	{
-		templateMatchingColorWithRotation(img, template, &result, &distance, &best_rotation);
-		rotation=best_rotation;
-	}
-	else
-	{
-		templateMatchingColor(img, template, &result, &distance);
-	}
-
-	if (distance < threshold)
-	{	
-		writeResult(output_name_txt, getBaseName(template_file), result, template->width, template->height, rotation, distance);
-		if (isPrintResult)
+		// 4つの角度でテンプレートマッチングを実行し、それぞれの結果を出力
+		int rotations[] = {0, 90, 180, 270};
+		
+		for (int i = 0; i < 4; i++)
 		{
-			printf("[Found    ] %s %d %d %d %d %d %f\n", getBaseName(template_file), result.x, result.y, template->width, template->height, rotation, distance);
+			Point temp_result;
+			double temp_distance;
+			
+			printf("rotation -> %d\n", rotations[i]);
+			templateMatchingColorWithRotation(img, template, &temp_result, &temp_distance, rotations[i]);
+			
+			// 回転時のテンプレートサイズを計算
+			int output_width = template->width;
+			int output_height = template->height;
+			if (rotations[i] == 90 || rotations[i] == 270) {
+				output_width = template->height;
+				output_height = template->width;
+			}
+			
+			if (temp_distance < threshold)
+			{
+				writeResult(output_name_txt, getBaseName(template_file), temp_result, output_width, output_height, rotations[i], temp_distance);
+				if (isPrintResult)
+				{
+					printf("[Found    ] %s %d %d %d %d %d %f\n", getBaseName(template_file), temp_result.x, temp_result.y, output_width, output_height, rotations[i], temp_distance);
+				}
+				if (isWriteImageResult)
+				{
+					drawRectangle(img, temp_result, output_width, output_height);
+				}
+			}
+			else
+			{
+				if (isPrintResult)
+				{
+					printf("[Not found] %s %d %d %d %d %d %f\n", getBaseName(template_file), temp_result.x, temp_result.y, output_width, output_height, rotations[i], temp_distance);
+				}
+			}
 		}
+		
+		// 画像出力は最後に一度だけ実行
 		if (isWriteImageResult)
 		{
-			drawRectangle(img, result, template->width, template->height);
-
 			if (img->channel == 3)
 				strcat(output_name_img, ".ppm");
 			else if (img->channel == 1)
@@ -387,9 +404,49 @@ int main(int argc, char **argv)
 	}
 	else
 	{
-		if (isPrintResult)
+		templateMatchingColor(img, template, &result, &distance);
+		
+		if (distance < threshold)
+		{	
+			// 回転時のテンプレートサイズを計算
+			int output_width = template->width;
+			int output_height = template->height;
+			if (rotation == 90 || rotation == 270) {
+				output_width = template->height;
+				output_height = template->width;
+			}
+			
+			writeResult(output_name_txt, getBaseName(template_file), result, output_width, output_height, rotation, distance);
+			if (isPrintResult)
+			{
+				printf("[Found    ] %s %d %d %d %d %d %f\n", getBaseName(template_file), result.x, result.y, output_width, output_height, rotation, distance);
+			}
+			if (isWriteImageResult)
+			{
+				drawRectangle(img, result, output_width, output_height);
+
+				if (img->channel == 3)
+					strcat(output_name_img, ".ppm");
+				else if (img->channel == 1)
+					strcat(output_name_img, ".pgm");
+				printf("out: %s", output_name_img);
+				writePXM(output_name_img, img);
+			}
+		}
+		else
 		{
-			printf("[Not found] %s %d %d %d %d %d %f\n", getBaseName(template_file), result.x, result.y, template->width, template->height, rotation, distance);
+			// 回転時のテンプレートサイズを計算
+			int output_width = template->width;
+			int output_height = template->height;
+			if (rotation == 90 || rotation == 270) {
+				output_width = template->height;
+				output_height = template->width;
+			}
+			
+			if (isPrintResult)
+			{
+				printf("[Not found] %s %d %d %d %d %d %f\n", getBaseName(template_file), result.x, result.y, output_width, output_height, rotation, distance);
+			}
 		}
 	}
 
