@@ -92,5 +92,13 @@ for image in $1/test/*.ppm; do
             done
             echo ""
     esac
+
+done
+if
+for result_file in result/*.txt; do
+
+    awk 'NR == 1 || $7 < min { min = $7; line = $0 } END { print line }' "$result_file" > tmp.txt
+    mv tmp.txt "$result_file"
+    echo "$result_file done"
 done
 wait
