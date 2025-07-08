@@ -5,7 +5,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <limits.h>
-//#include <omp.h>
+#include <math.h>
+#include <omp.h>
 
 void templateMatchingGray(Image *src, Image *template, Point *position, double *distance)
 {
@@ -58,38 +59,58 @@ void templateMatchingColor(Image *src, Image *template, Point *position, double 
 	int min_distance = INT_MAX;
 	int ret_x = 0;
 	int ret_y = 0;
-	int x, y, i, j;
-	for (y = 0; y < (src->height - template->height); y++)
+	#pragma omp parallel
 	{
-		for (x = 0; x < src->width - template->width; x++)
+		int local_min_distance = INT_MAX;
+		int local_ret_x = 0;
+		int local_ret_y = 0;
+		#pragma omp for nowait
+		for (int y = 0; y < (src->height - template->height); y++)
 		{
-			int distance = 0;
-			//SSD
-			for (j = 0; j < template->height; j++)
+			for (int x = 0; x < src->width - template->width; x++)
 			{
-				for (i = 0; i < template->width; i++)
+				int distance = 0;
+				//SSD
+				for (int j = 0; j < template->height; j++)
 				{
-					int pt = 3 * ((y + j) * src->width + (x + i));
-					int pt2 = 3 * (j * template->width + i);
-					int r = (src->data[pt + 0] - template->data[pt2 + 0]);
-					int g = (src->data[pt + 1] - template->data[pt2 + 1]);
-					int b = (src->data[pt + 2] - template->data[pt2 + 2]);
+					for (int i = 0; i < template->width; i++)
+					{
+						int pt = 3 * ((y + j) * src->width + (x + i));
+						int pt2 = 3 * (j * template->width + i);
+						int r = (src->data[pt + 0] - template->data[pt2 + 0]);
+						int g = (src->data[pt + 1] - template->data[pt2 + 1]);
+						int b = (src->data[pt + 2] - template->data[pt2 + 2]);
 
-					distance += (r * r + g * g + b * b);
+						distance += (r * r + g * g + b * b);
+					}
+				}
+				if (distance < local_min_distance)
+				{
+					local_min_distance = distance;
+					local_ret_x = x;
+					local_ret_y = y;
 				}
 			}
-			if (distance < min_distance)
-			{
-				min_distance = distance;
-				ret_x = x;
-				ret_y = y;
+		}
+		#pragma omp critical
+		{
+			if(local_min_distance < min_distance) {
+				min_distance = local_min_distance;
+				ret_x = local_ret_x;
+				ret_y = local_ret_y;
 			}
 		}
 	}
 
 	position->x = ret_x;
 	position->y = ret_y;
-	*distance = sqrt(min_distance) / (template->width * template->height);
+	
+	if(min_distance == INT_MAX) {
+		*distance = INT_MAX;
+	}
+	else {
+		*distance = sqrt(min_distance) / (template->width * template->height);
+	}
 }
 
 void templateMatchingColorTransparent(Image *src, Image *template, Point *position, double *distance)
