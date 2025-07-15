@@ -1,6 +1,6 @@
 #!/bin/sh
 # Level7代替案 - より確実な結果抽出（単一最良結果選択版）
-for image in final_dataset/$1/*.ppm; do
+for image in $1/test/*.ppm; do
     bname=`basename ${image}`
     name="imgproc/"$bname
     x=0    	#
@@ -36,20 +36,21 @@ for image in final_dataset/$1/*.ppm; do
             > "$all_results"
             
             # 各テンプレートに対して個別に処理
-            for template in final_dataset/*.ppm; do
+            for template in $1/*.ppm; do
                 original_template=`basename ${template}`
                 echo "Processing template: $original_template"
                 
                 # このテンプレートの全結果を収集する一時ファイル
                 template_results="temp_${original_template}.txt"
+                > "$template_results"
                 
                 # Level 1
-                level1_name="imgproc/level1_"`basename ${image}`> "$template_results"
+                level1_name="imgproc/level1_"`basename ${image}`
                 convert "${image}" "${level1_name}"
                 tempname="imgproc/level1_$original_template"
                 convert "${template}" "${tempname}"
-                # 修正: 結果からテンプレート名の部分だけを抽出
-                result=$(./matching "$level1_name" "$tempname" 0 1.5 p 2>/dev/null | grep "^[a-zA-Z]" | sed "s|^[^/]*/||")
+                # 修正: [Found]を削除したので、template名で始まる行を抽出
+                result=$(./matching "$level1_name" "$tempname" 0 1.5 p 2>/dev/null | grep "^[a-zA-Z]")
                 if [ -n "$result" ]; then
                     echo "$result" >> "$template_results"
                 fi
@@ -59,7 +60,7 @@ for image in final_dataset/$1/*.ppm; do
                 convert -blur 2x6 "${image}" "${level2_name}"
                 tempname="imgproc/level2_$original_template"
                 convert "${template}" "${tempname}"
-                result=$(./matching "$level2_name" "$tempname" 0 1.5 p 2>/dev/null | grep "^[a-zA-Z]" | sed "s|^[^/]*/||")
+                result=$(./matching "$level2_name" "$tempname" 0 1.5 p 2>/dev/null | grep "^[a-zA-Z]")
                 if [ -n "$result" ]; then
                     echo "$result" >> "$template_results"
                 fi
@@ -69,7 +70,7 @@ for image in final_dataset/$1/*.ppm; do
                 convert "${image}" "${level3_name}"
                 tempname="imgproc/level3_$original_template"
                 convert "${template}" "${tempname}"
-                result=$(./matching "$level3_name" "$tempname" 0 1.5 p 2>/dev/null | grep "^[a-zA-Z]" | sed "s|^[^/]*/||")
+                result=$(./matching "$level3_name" "$tempname" 0 1.5 p 2>/dev/null | grep "^[a-zA-Z]")
                 if [ -n "$result" ]; then
                     echo "$result" >> "$template_results"
                 fi
@@ -79,7 +80,7 @@ for image in final_dataset/$1/*.ppm; do
                 convert "${image}" "${level4_name}"
                 tempname="imgproc/level4_$original_template"
                 convert "${template}" "${tempname}"
-                result=$(./matching "$level4_name" "$tempname" 0 1.5 p 2>/dev/null | grep "^[a-zA-Z]" | sed "s|^[^/]*/||")
+                result=$(./matching "$level4_name" "$tempname" 0 1.5 p 2>/dev/null | grep "^[a-zA-Z]")
                 if [ -n "$result" ]; then
                     echo "$result" >> "$template_results"
                 fi
@@ -90,7 +91,7 @@ for image in final_dataset/$1/*.ppm; do
                 for size in 50 100 200; do
                     tempname="imgproc/level5_${size}_$original_template"
                     convert -resize "$size"% "${template}" "${tempname}"
-                    result=$(./matching "$level5_name" "$tempname" 0 1.0 p 2>/dev/null | grep "^[a-zA-Z]" | sed "s|^[^/]*/||")
+                    result=$(./matching "$level5_name" "$tempname" 0 1.0 p 2>/dev/null | grep "^[a-zA-Z]")
                     if [ -n "$result" ]; then
                         echo "$result" >> "$template_results"
                     fi
@@ -106,7 +107,7 @@ for image in final_dataset/$1/*.ppm; do
                     else
                         convert -rotate $rot "${template}" "${tempname}"
                     fi
-                    result=$(./matching "$level6_name" "$tempname" $rot 1.5 p 2>/dev/null | grep "^[a-zA-Z]" | sed "s|^[^/]*/||")
+                    result=$(./matching "$level6_name" "$tempname" $rot 1.5 p 2>/dev/null | grep "^[a-zA-Z]")
                     if [ -n "$result" ]; then
                         echo "$result" >> "$template_results"
                     fi
@@ -158,7 +159,7 @@ for image in final_dataset/$1/*.ppm; do
     case $1 in
         "level1"|"level2"|"level3"|"level4")
             echo $bname:
-            for template in final_dataset/*.ppm; do
+            for template in $1/*.ppm; do
 	            echo `basename ${template}`
 	            if [ $x = 0 ]
 	            then
@@ -179,7 +180,7 @@ for image in final_dataset/$1/*.ppm; do
             fi
             for i in ${itre}; do
                 echo "$bname: (scale/rot: $i)"
-                for template in final_dataset/*.ppm; do
+                for template in $1/*.ppm; do
                     if [ ! -f "$template" ]; then continue; fi
                     (
                         tempname="imgproc/"`basename ${template}`
@@ -195,7 +196,7 @@ for image in final_dataset/$1/*.ppm; do
                     ) &
                 done
                 wait
-                for template in final_dataset/*.ppm; do
+                for template in $1/*.ppm; do
                     if [ ! -f "$template" ]; then continue; fi
                     tempname="imgproc/"`basename ${template}`
                     if [ $1 = "level6" ]; then
@@ -216,7 +217,7 @@ for image in final_dataset/$1/*.ppm; do
             ;;
         *)
             echo $bname:
-            for template in final_dataset/*.ppm; do
+            for template in $1/*.ppm; do
                 echo `basename ${template}`
 	        if [ $x = 0 ]; then
 	            ./matching $name "${template}" $rotation 1.5 cp 
