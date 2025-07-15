@@ -331,7 +331,7 @@ int main(int argc, char **argv)
 	int rotation = atoi(argv[3]);
 	double threshold = atof(argv[4]);
 	const char *level4 = "level4";
-	printf("rotation -> %d\n", rotation);
+	//printf("rotation -> %d\n", rotation);
 
 	char output_name_base[256];
 	char output_name_txt[256];
