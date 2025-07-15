@@ -3,39 +3,37 @@
 #include <stdlib.h>
 #include <string.h>
 #include <limits.h>
-#include <math.h>
+// #include <omp.h>
 
 void templateMatchingGray(Image *src, Image *template, Point *position, double *distance)
 {
 	if (src->channel != 1 || template->channel != 1)
 	{
-		fprintf(stderr, "src and/or template image is not a gray image.\n");
+		fprintf(stderr, "src and/or templeta image is not a gray image.\n");
 		return;
 	}
 
-	double min_distance = INFINITY;
+	int min_distance = INT_MAX;
 	int ret_x = 0;
 	int ret_y = 0;
 	int x, y, i, j;
-	
-	for (y = 0; y <= (src->height - template->height); y++)
+	for (y = 0; y < (src->height - template->height); y++)
 	{
-		for (x = 0; x <= (src->width - template->width); x++)
+		for (x = 0; x < src->width - template->width; x++)
 		{
-			long long distance = 0;
+			int distance = 0;
 			// SSD
 			for (j = 0; j < template->height; j++)
 			{
 				for (i = 0; i < template->width; i++)
 				{
 					int v = (src->data[(y + j) * src->width + (x + i)] - template->data[j * template->width + i]);
-					distance += (long long)v * v;
+					distance += v * v;
 				}
 			}
-			double normalized_distance = sqrt((double)distance) / (template->width * template->height);
-			if (normalized_distance < min_distance)
+			if (distance < min_distance)
 			{
-				min_distance = normalized_distance;
+				min_distance = distance;
 				ret_x = x;
 				ret_y = y;
 			}
@@ -44,27 +42,26 @@ void templateMatchingGray(Image *src, Image *template, Point *position, double *
 
 	position->x = ret_x;
 	position->y = ret_y;
-	*distance = min_distance;
+	*distance = sqrt(min_distance) / (template->width * template->height);
 }
 
 void templateMatchingColor(Image *src, Image *template, Point *position, double *distance)
 {
 	if (src->channel != 3 || template->channel != 3)
 	{
-		fprintf(stderr, "src and/or template image is not a color image.\n");
+		fprintf(stderr, "src and/or templeta image is not a color image.\n");
 		return;
 	}
 
-	double min_distance = INFINITY;
+	int min_distance = INT_MAX;
 	int ret_x = 0;
 	int ret_y = 0;
 	int x, y, i, j;
-	
-	for (y = 0; y <= (src->height - template->height); y++)
+	for (y = 0; y < (src->height - template->height); y++)
 	{
-		for (x = 0; x <= (src->width - template->width); x++)
+		for (x = 0; x < src->width - template->width; x++)
 		{
-			long long distance = 0;
+			int distance = 0;
 			// SSD
 			for (j = 0; j < template->height; j++)
 			{
@@ -76,13 +73,12 @@ void templateMatchingColor(Image *src, Image *template, Point *position, double 
 					int g = (src->data[pt + 1] - template->data[pt2 + 1]);
 					int b = (src->data[pt + 2] - template->data[pt2 + 2]);
 
-					distance += (long long)(r * r + g * g + b * b);
+					distance += (r * r + g * g + b * b);
 				}
 			}
-			double normalized_distance = sqrt((double)distance) / (template->width * template->height);
-			if (normalized_distance < min_distance)
+			if (distance < min_distance)
 			{
-				min_distance = normalized_distance;
+				min_distance = distance;
 				ret_x = x;
 				ret_y = y;
 			}
@@ -91,23 +87,74 @@ void templateMatchingColor(Image *src, Image *template, Point *position, double 
 
 	position->x = ret_x;
 	position->y = ret_y;
-	*distance = min_distance;
+	*distance = sqrt(min_distance) / (template->width * template->height);
 }
 
 void templateMatchingColorTransparent(Image *src, Image *template, Point *position, double *distance)
 {
 	if (src->channel != 3 || template->channel != 3)
 	{
-		fprintf(stderr, "src and/or template image is not a color image.\n");
+		fprintf(stderr, "src and/or templeta image is not a color image.\n");
 		return;
 	}
 
-	double min_distance = INFINITY;
+	int min_distance = INT_MAX;
 	int ret_x = 0;
 	int ret_y = 0;
 	int x, y, i, j;
 
-	// 先にテンプレートの有効ピクセル数を計算
+	for (y = 0; y < (src->height - template->height); y++)
+	{
+		for (x = 0; x < src->width - template->width; x++)
+		{
+			int distance = 0;
+			int valid_pixels = 0; // 計算に使用されたピクセル数をカウント
+
+			// SSD
+			for (j = 0; j < template->height; j++)
+			{
+				for (i = 0; i < template->width; i++)
+				{
+					int pt = 3 * ((y + j) * src->width + (x + i));
+					int pt2 = 3 * (j * template->width + i);
+
+					// テンプレートのピクセルが黒かどうかをチェック
+					// RGB値がすべて閾値以下（例：10）の場合は黒とみなす
+					int tr = template->data[pt2 + 0];
+					int tg = template->data[pt2 + 1];
+					int tb = template->data[pt2 + 2];
+
+					// 黒ピクセルの判定（閾値は調整可能）
+					if (tr <= 10 && tg <= 10 && tb <= 10)
+					{
+						// 黒ピクセルの場合はスキップ
+						continue;
+					}
+
+					// 非黒ピクセルの場合は距離計算を行う
+					int r = (src->data[pt + 0] - tr);
+					int g = (src->data[pt + 1] - tg);
+					int b = (src->data[pt + 2] - tb);
+					distance += (r * r + g * g + b * b);
+					valid_pixels++;
+				}
+			}
+
+			// 有効なピクセルが存在する場合のみ距離を比較
+			if (valid_pixels > 0 && distance < min_distance)
+			{
+				min_distance = distance;
+				ret_x = x;
+				ret_y = y;
+			}
+		}
+	}
+
+	position->x = ret_x;
+	position->y = ret_y;
+
+	// 正規化時に有効ピクセル数を考慮
+	// 全体のピクセル数ではなく、実際に計算に使用されたピクセル数で正規化
 	int total_valid_pixels = 0;
 	for (j = 0; j < template->height; j++)
 	{
@@ -125,61 +172,14 @@ void templateMatchingColorTransparent(Image *src, Image *template, Point *positi
 		}
 	}
 
-	if (total_valid_pixels == 0)
+	if (total_valid_pixels > 0)
 	{
-		position->x = 0;
-		position->y = 0;
-		*distance = 0.0;
-		return;
+		*distance = sqrt(min_distance) / total_valid_pixels;
 	}
-
-	for (y = 0; y <= (src->height - template->height); y++)
+	else
 	{
-		for (x = 0; x <= (src->width - template->width); x++)
-		{
-			long long distance = 0;
-
-			// SSD
-			for (j = 0; j < template->height; j++)
-			{
-				for (i = 0; i < template->width; i++)
-				{
-					int pt = 3 * ((y + j) * src->width + (x + i));
-					int pt2 = 3 * (j * template->width + i);
-
-					// テンプレートのピクセルが黒かどうかをチェック
-					int tr = template->data[pt2 + 0];
-					int tg = template->data[pt2 + 1];
-					int tb = template->data[pt2 + 2];
-
-					// 黒ピクセルの判定（閾値は調整可能）
-					if (tr <= 10 && tg <= 10 && tb <= 10)
-					{
-						// 黒ピクセルの場合はスキップ
-						continue;
-					}
-
-					// 非黒ピクセルの場合は距離計算を行う
-					int r = (src->data[pt + 0] - tr);
-					int g = (src->data[pt + 1] - tg);
-					int b = (src->data[pt + 2] - tb);
-					distance += (long long)(r * r + g * g + b * b);
-				}
-			}
-
-			double normalized_distance = sqrt((double)distance) / total_valid_pixels;
-			if (normalized_distance < min_distance)
-			{
-				min_distance = normalized_distance;
-				ret_x = x;
-				ret_y = y;
-			}
-		}
+		*distance = 0.0; // 全て黒ピクセルの場合
 	}
-
-	position->x = ret_x;
-	position->y = ret_y;
-	*distance = min_distance;
 }
 
 void getRotatedPixel(int i, int j, int width, int height, int rotation, int *rot_i, int *rot_j)
@@ -229,7 +229,7 @@ void templateMatchingColorWithRotation(Image *src, Image *template, Point *posit
 		return;
 	}
 
-	double min_distance = INFINITY;
+	int min_distance = INT_MAX;
 	int best_x = 0, best_y = 0;
 	int rot_width, rot_height;
 
@@ -241,7 +241,7 @@ void templateMatchingColorWithRotation(Image *src, Image *template, Point *posit
 	{
 		for (int x = 0; x <= (src->width - rot_width); x++)
 		{
-			long long distance = 0;
+			int distance = 0;
 
 			// SSD計算（回転したテンプレート）
 			for (int j = 0; j < rot_height; j++)
@@ -262,15 +262,14 @@ void templateMatchingColorWithRotation(Image *src, Image *template, Point *posit
 					int r = (src->data[src_pt + 0] - template->data[template_pt + 0]);
 					int g = (src->data[src_pt + 1] - template->data[template_pt + 1]);
 					int b = (src->data[src_pt + 2] - template->data[template_pt + 2]);
-					distance += (long long)(r * r + g * g + b * b);
+					distance += (r * r + g * g + b * b);
 				}
 			}
 
 			// 最小距離の更新
-			double normalized_distance = sqrt((double)distance) / (template->width * template->height);
-			if (normalized_distance < min_distance)
+			if (distance < min_distance)
 			{
-				min_distance = normalized_distance;
+				min_distance = distance;
 				best_x = x;
 				best_y = y;
 			}
@@ -280,23 +279,50 @@ void templateMatchingColorWithRotation(Image *src, Image *template, Point *posit
 	// 結果を返す
 	position->x = best_x;
 	position->y = best_y;
-	*distance = min_distance;
+	*distance = sqrt(min_distance) / (template->width * template->height);
 }
 
+// テンプレートファイル名から "level数字_" プレフィックスを除去する関数
+char* removePrefix(const char* filename) {
+	static char result[256];
+	const char* src = filename;
+	char* dest = result;
+	
+	// "level" で始まるかチェック
+	if (strncmp(src, "level", 5) == 0) {
+		src += 5; // "level" をスキップ
+		
+		// 数字をスキップ
+		while (*src >= '0' && *src <= '9') {
+			src++;
+		}
+		
+		// "_" をスキップ
+		if (*src == '_') {
+			src++;
+		}
+	}
+	
+	// 残りの文字列をコピー
+	strcpy(dest, src);
+	return result;
+}
+
+// test/beach3.ppm template /airgun_women_syufu.ppm 0 0.5 cwp
 int main(int argc, char **argv)
 {
 	if (argc < 5)
 	{
-		fprintf(stderr, "Usage: templateMatching src_image template_image rotation threshold option(c,w,p,g)\n");
+		fprintf(stderr, "Usage: templateMatching src_image temlate_image rotation threshold option(c,w,p,g)\n");
 		fprintf(stderr, "Option:\nc) clear a txt result. \nw) write result a image with rectangle.\np) print results.\n");
-		fprintf(stderr, "ex: templateMatching src_image.ppm template_image.ppm 0 1.0  \n");
-		fprintf(stderr, "ex: templateMatching src_image.ppm template_image.ppm 0 1.0 c\n");
-		fprintf(stderr, "ex: templateMatching src_image.ppm template_image.ppm 0 1.0 w\n");
-		fprintf(stderr, "ex: templateMatching src_image.ppm template_image.ppm 0 1.0 p\n");
-		fprintf(stderr, "ex: templateMatching src_image.ppm template_image.ppm 0 1.0 g\n");
-		fprintf(stderr, "ex: templateMatching src_image.ppm template_image.ppm 0 1.0 cw\n");
-		fprintf(stderr, "ex: templateMatching src_image.ppm template_image.ppm 0 1.0 cwp\n");
-		fprintf(stderr, "ex: templateMatching src_image.ppm template_image.ppm 0 1.0 cwpg\n");
+		fprintf(stderr, "ex: templateMatching src_image.ppm temlate_image.ppm 0 1.0  \n");
+		fprintf(stderr, "ex: templateMatching src_image.ppm temlate_image.ppm 0 1.0 c\n");
+		fprintf(stderr, "ex: templateMatching src_image.ppm temlate_image.ppm 0 1.0 w\n");
+		fprintf(stderr, "ex: templateMatching src_image.ppm temlate_image.ppm 0 1.0 p\n");
+		fprintf(stderr, "ex: templateMatching src_image.ppm temlate_image.ppm 0 1.0 g\n");
+		fprintf(stderr, "ex: templateMatching src_image.ppm temlate_image.ppm 0 1.0 cw\n");
+		fprintf(stderr, "ex: templateMatching src_image.ppm temlate_image.ppm 0 1.0 cwp\n");
+		fprintf(stderr, "ex: templateMatching src_image.ppm temlate_image.ppm 0 1.0 cwpg\n");
 		return -1;
 	}
 
@@ -305,6 +331,7 @@ int main(int argc, char **argv)
 	int rotation = atoi(argv[3]);
 	double threshold = atof(argv[4]);
 	const char *level4 = "level4";
+	printf("rotation -> %d\n", rotation);
 
 	char output_name_base[256];
 	char output_name_txt[256];
@@ -322,13 +349,13 @@ int main(int argc, char **argv)
 	if (argc == 6)
 	{
 		char *p = NULL;
-		if ((p = strchr(argv[5], 'c')) != NULL)
+		if (p = strchr(argv[5], 'c') != NULL)
 			clearResult(output_name_txt);
-		if ((p = strchr(argv[5], 'w')) != NULL)
+		if (p = strchr(argv[5], 'w') != NULL)
 			isWriteImageResult = 1;
-		if ((p = strchr(argv[5], 'p')) != NULL)
+		if (p = strchr(argv[5], 'p') != NULL)
 			isPrintResult = 1;
-		if ((p = strchr(argv[5], 'g')) != NULL)
+		if (p = strchr(argv[5], 'g') != NULL)
 			isGray = 1;
 	}
 
@@ -354,10 +381,6 @@ int main(int argc, char **argv)
 	{
 		templateMatchingColorTransparent(img, template, &result, &distance);
 	}
-	else if (rotation != 0)
-	{
-		templateMatchingColorWithRotation(img, template, &result, &distance, rotation);
-	}
 	else
 	{
 		templateMatchingColor(img, template, &result, &distance);
@@ -365,10 +388,11 @@ int main(int argc, char **argv)
 
 	if (distance < threshold)
 	{
-		writeResult(output_name_txt, getBaseName(template_file), result, template->width, template->height, rotation, distance);
+		char* clean_template_name = removePrefix(getBaseName(template_file));
+		writeResult(output_name_txt, clean_template_name, result, template->width, template->height, rotation, distance);
 		if (isPrintResult)
 		{
-			printf("[Found] %s %d %d %d %d %d %f\n", getBaseName(template_file), result.x, result.y, template->width, template->height, rotation, distance);
+			printf("%s %d %d %d %d %d %f\n", clean_template_name, result.x, result.y, template->width, template->height, rotation, distance);
 		}
 		if (isWriteImageResult)
 		{
@@ -378,7 +402,7 @@ int main(int argc, char **argv)
 				strcat(output_name_img, ".ppm");
 			else if (img->channel == 1)
 				strcat(output_name_img, ".pgm");
-			printf("out: %s\n", output_name_img);
+			printf("out: %s", output_name_img);
 			writePXM(output_name_img, img);
 		}
 	}
@@ -386,7 +410,8 @@ int main(int argc, char **argv)
 	{
 		if (isPrintResult)
 		{
-			printf("[Not Found] %s %d %d %d %d %d %f (threshold: %f)\n", getBaseName(template_file), result.x, result.y, template->width, template->height, rotation, distance, threshold);
+			char* clean_template_name = removePrefix(getBaseName(template_file));
+			printf("%s %d %d %d %d %d %f\n", clean_template_name, result.x, result.y, template->width, template->height, rotation, distance);
 		}
 	}
 
