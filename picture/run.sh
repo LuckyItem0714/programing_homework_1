@@ -1,6 +1,11 @@
 #!/bin/sh
 # Level7代替案 - より確実な結果抽出（単一最良結果選択版）
+MAX_JOBS=5
 for image in $1/test/*.ppm; do
+    while [ $(jobbs | wc -l) -ge $MAX_JOBS ]; do
+        sleep 1
+    done
+    (
     bname=`basename ${image}`
     name="imgproc/"$bname
     x=0    	#
@@ -229,8 +234,9 @@ for image in $1/test/*.ppm; do
             echo ""
             ;;
     esac
-    
+    )&
 done
+wait
 
 for result_file in result/*.txt; do
     awk 'NR == 1 || $7 < min { min = $7; line = $0 } END { print line }' "$result_file" > tmp.txt
