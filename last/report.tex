@@ -13,6 +13,7 @@
 \usepackage{booktabs}
 \usepackage{array}
 \usepackage{longtable}
+\usepackage{here}
 
 % ページ設定
 \geometry{left=25mm,right=25mm,top=30mm,bottom=30mm}
@@ -92,7 +93,7 @@
 \section{実装工程表}
 
 \subsection{プロジェクト全体スケジュール}
-手話認識システムの開発を24ヶ月で実施する計画である。
+手話認識システムの開発を2026年4月から2027年8月まで（17ヶ月間）で実施する計画である。
 
 \begin{longtable}{|p{3cm}|p{2.5cm}|p{6cm}|p{3cm}|}
 \hline
@@ -100,257 +101,106 @@
 \hline
 \endhead
 
-要件定義・調査 & 1-3ヶ月 & 
+フェーズ1：企画・設計 & 2026年4月-7月 & 
 \begin{itemize}
-\item 手話データセット調査・収集
-\item 既存LLM調査・選定
-\item ハードウェア要件定義
-\item ユーザー要件調査
+\item 要件定義
+\item 基本設計
+\item 詳細設計
 \end{itemize} & 
 \begin{itemize}
 \item 要件定義書
-\item データセット仕様書
-\item ハードウェア仕様書
+\item 基本設計書
+\item 詳細設計書
 \end{itemize} \\
 \hline
 
-基本設計 & 4-6ヶ月 & 
+フェーズ2：AI開発 & 2026年8月-2027年2月 & 
 \begin{itemize}
-\item システムアーキテクチャ設計
-\item AI モデル基本設計
-\item モーションキャプチャ手袋設計
-\item データベース設計
-\item UI/UX設計
-\end{itemize} & 
-\begin{itemize}
-\item システム設計書
-\item AI モデル設計書
-\item データベース設計書
-\item UI設計書
-\end{itemize} \\
-\hline
-
-プロトタイプ開発 & 7-10ヶ月 & 
-\begin{itemize}
-\item 映像認識プロトタイプ開発
-\item 基本的な手話単語認識実装
-\item モーションキャプチャ手袋試作
-\item データ収集システム開発
-\end{itemize} & 
-\begin{itemize}
-\item プロトタイプシステム
-\item 手袋試作品
-\item 基本性能評価結果
-\end{itemize} \\
-\hline
-
-AI モデル開発 & 11-16ヶ月 & 
-\begin{itemize}
-\item 転移学習によるモデル構築
-\item 手話データセットでの学習
-\item 単語列→文章変換モデル統合
-\item 精度向上のためのチューニング
+\item 手話データ収集
+\item 画像認識AI開発
+\item 自然言語変換開発
+\item モーションキャプチャ技術開発
 \end{itemize} & 
 \begin{itemize}
 \item 手話認識AIモデル
 \item 自然言語変換モデル
-\item 学習済みパラメータ
+\item モーションキャプチャシステム
 \end{itemize} \\
 \hline
 
-ハードウェア開発 & 8-15ヶ月 & 
+フェーズ3：アプリ開発 & 2026年11月-2027年5月 & 
 \begin{itemize}
-\item モーションキャプチャ手袋開発
-\item センサー最適化
-\item 無線通信機能実装
-\item 量産設計
+\item UI/UX設計
+\item フロントエンド開発
+\item バックエンド開発
+\item データベース構築
 \end{itemize} & 
 \begin{itemize}
-\item 完成版手袋
-\item 製造仕様書
-\item 品質管理基準
+\item ユーザーインターフェース
+\item アプリケーション
+\item データベースシステム
 \end{itemize} \\
 \hline
 
-統合システム開発 & 17-20ヶ月 & 
+フェーズ4：テスト・導入 & 2027年3月-8月 & 
 \begin{itemize}
-\item 各コンポーネント統合
-\item リアルタイム処理最適化
-\item ユーザーインターフェース完成
-\item フィードバック機能実装
-\end{itemize} & 
-\begin{itemize}
-\item 統合システム
-\item 操作マニュアル
-\item API仕様書
-\end{itemize} \\
-\hline
-
-テスト・評価 & 21-22ヶ月 & 
-\begin{itemize}
-\item システム全体テスト
-\item ユーザビリティテスト
-\item 精度評価・改善
-\item 負荷テスト
+\item 単体テスト
+\item 統合テスト
+\item ユーザーテスト
+\item システム移行・導入
 \end{itemize} & 
 \begin{itemize}
 \item テスト報告書
-\item 性能評価書
-\item 改善提案書
-\end{itemize} \\
-\hline
-
-導入準備・運用開始 & 23-24ヶ月 & 
-\begin{itemize}
-\item 運用環境構築
-\item ユーザートレーニング
-\item サポート体制確立
-\item 本格運用開始
-\end{itemize} & 
-\begin{itemize}
 \item 運用システム
 \item 運用マニュアル
-\item サポート体制
 \end{itemize} \\
 \hline
 \end{longtable}
 
 \subsection{詳細マイルストーン}
 \begin{enumerate}
-    \item 要件定義完了：3ヶ月目
-    \item 基本設計完了：6ヶ月目
-    \item プロトタイプ完成：10ヶ月目
-    \item AIモデル初版完成：13ヶ月目
-    \item ハードウェア試作完成：12ヶ月目
-    \item 統合システムα版完成：18ヶ月目
-    \item システムβ版完成：20ヶ月目
-    \item 本格運用開始：24ヶ月目
+    \item 要件定義完了：2024年5月
+    \item 基本設計完了：2024年7月
+    \item プロトタイプ完成：2024年10月
+    \item β版リリース：2025年3月
+    \item 本格運用開始：2025年8月
 \end{enumerate}
 
 \subsection{並行開発スケジュール}
 \begin{table}[h]
 \centering
 \caption{開発チーム別スケジュール}
-\begin{tabular}{|l|c|c|c|c|c|c|c|c|}
+\begin{tabular}{|l|c|c|c|c|c|c|}
 \hline
-\textbf{チーム} & \textbf{1-3M} & \textbf{4-6M} & \textbf{7-10M} & \textbf{11-16M} & \textbf{17-20M} & \textbf{21-22M} & \textbf{23-24M} \\
+\textbf{チーム} & \textbf{4-5月} & \textbf{6-7月} & \textbf{8-10月} & \textbf{11-2月} & \textbf{3-5月} & \textbf{6-8月} \\
 \hline
-AIチーム & 調査 & 設計 & プロト & \textbf{開発} & 統合 & テスト & 運用 \\
+企画チーム & \textbf{要件定義} & 設計支援 & - & - & テスト & 導入 \\
 \hline
-HWチーム & 調査 & 設計 & 試作 & \textbf{開発} & 統合 & テスト & 運用 \\
+AIチーム & 調査 & 設計 & \textbf{プロト} & \textbf{開発} & 統合 & 運用 \\
 \hline
-SWチーム & 要件 & 設計 & プロト & 開発 & \textbf{統合} & テスト & 運用 \\
+アプリチーム & 調査 & 設計 & 準備 & \textbf{開発} & \textbf{統合} & 運用 \\
 \hline
-UIチーム & 調査 & 設計 & プロト & 開発 & \textbf{統合} & テスト & 運用 \\
+テストチーム & - & 計画 & 準備 & 準備 & \textbf{テスト} & \textbf{導入} \\
 \hline
 \end{tabular}
 \end{table}
 
-\subsection{リスク管理}
-\begin{table}[h]
+
+\subsection{プロジェクトガントチャート}
+% プロジェクト全体のガントチャートを表示
+\begin{figure}[H]
 \centering
-\caption{主要リスクと対策}
-\begin{tabular}{|p{4cm}|p{2cm}|p{6cm}|}
-\hline
-\textbf{リスク項目} & \textbf{発生確率} & \textbf{対策} \\
-\hline
-AI精度が目標未達 & 中 & 複数のモデルを並行開発、データセット拡充 \\
-\hline
-ハードウェア開発遅延 & 中 & 外部ベンダーとの連携、代替案検討 \\
-\hline
-データ収集困難 & 高 & 聴覚障害者団体との連携強化 \\
-\hline
-リアルタイム処理性能不足 & 中 & 処理最適化、ハードウェア性能向上 \\
-\hline
-個人差への対応困難 & 高 & 継続学習機能の実装、ユーザー適応機能 \\
-\hline
-\end{tabular}
-\end{table}
+\includegraphics[width=\textwidth]{gantchart.eps}
+\caption{手話翻訳システム実装工程表（2026年4月-2027年8月）}
+\label{fig:gantchart}
+\end{figure}
+
 \section{効果}
 
-\subsection{定量的効果}
-% 数値で測定可能な効果を記述
-\begin{table}[h]
-\centering
-\caption{定量的効果の試算}
-\begin{tabular}{|l|r|r|r|}
-\hline
-\textbf{項目} & \textbf{現状} & \textbf{改善後} & \textbf{改善率} \\
-\hline
-処理時間 & 60分 & 15分 & 75\%削減 \\
-\hline
-エラー率 & 5\% & 1\% & 80\%削減 \\
-\hline
-運用コスト & 100万円/月 & 60万円/月 & 40\%削減 \\
-\hline
-\end{tabular}
-\end{table}
-
-\subsection{定性的効果}
-% 数値化困難だが重要な効果を記述
-\begin{itemize}
-    \item ユーザビリティの向上
-    \item 業務効率の改善
-    \item データ品質の向上
-    \item 意思決定の迅速化
-\end{itemize}
-
-\subsection{投資対効果（ROI）}
-% 投資対効果の分析結果を記述
 
 \section{ポンチ絵（システム概要図）}
 
-\subsection{現行システム構成}
-% 現行システムの構成図を挿入
-\begin{figure}[h]
-\centering
-% \includegraphics[width=0.8\textwidth]{current_system.png}
-\fbox{\parbox{0.8\textwidth}{\centering 現行システム構成図\\（図を挿入してください）}}
-\caption{現行システム構成}
-\end{figure}
-
-\subsection{提案システム構成}
-% 提案するシステムの構成図を挿入
-\begin{figure}[h]
-\centering
-% \includegraphics[width=0.8\textwidth]{proposed_system.png}
-\fbox{\parbox{0.8\textwidth}{\centering 提案システム構成図\\（図を挿入してください）}}
-\caption{提案システム構成}
-\end{figure}
-
-\subsection{統合アーキテクチャ概要}
-% システム統合のアーキテクチャ概要図を挿入
-\begin{figure}[h]
-\centering
-% \includegraphics[width=0.8\textwidth]{integration_architecture.png}
-\fbox{\parbox{0.8\textwidth}{\centering 統合アーキテクチャ概要図\\（図を挿入してください）}}
-\caption{統合アーキテクチャ概要}
-\end{figure}
 
 \section{まとめ}
-
-\subsection{提案の要点}
-% 提案内容の要点をまとめ
-
-\subsection{今後の課題}
-% 今後検討すべき課題を記述
-
-\subsection{結論}
-% レポートの結論を記述
-
-% 参考文献
-\begin{thebibliography}{9}
-\bibitem{ref1} 著者名, ``論文・書籍タイトル'', 出版社, 出版年.
-\bibitem{ref2} 著者名, ``論文・書籍タイトル'', 出版社, 出版年.
-\bibitem{ref3} 著者名, ``論文・書籍タイトル'', 出版社, 出版年.
-\end{thebibliography}
-
-% 付録（必要に応じて）
-\appendix
-\section{詳細仕様}
-% 詳細な技術仕様等を記述
-
-\section{コスト試算詳細}
-% コスト試算の詳細を記述
 
 \end{document}
