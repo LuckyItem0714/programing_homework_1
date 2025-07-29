@@ -1,0 +1,218 @@
+\documentclass[12pt,a4paper]{jsarticle}
+\usepackage[utf8]{inputenc}
+\usepackage[japanese]{babel}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{url}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{geometry}
+\usepackage{fancyhdr}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{longtable}
+
+% ページ設定
+\geometry{left=25mm,right=25mm,top=30mm,bottom=30mm}
+
+% ヘッダー・フッター設定
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{システム統合レポート}
+\fancyhead[R]{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+
+% タイトル情報
+\title{プログラミング応用　最終課題レポート\\
+\large 新システム提案・計画書}
+\author{
+グループ名：グループ13　フル単\\
+メンバー：井田　礼慈（学籍番号：35714012）\\
+\quad\quad\quad 大橋　蒼一朗（学籍番号：35714026）\\
+\quad\quad\quad 松岡　遼（学籍番号：35714128）\\
+}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\newpage
+
+\section{システムの概要}
+手話を自然な日本語で読み上げるシステム。手話の映像からAIによって意味を識別し、自然な日本語に変換する。
+\section{背景}
+
+% 現在のシステムやプロセスにおける問題点を記述
+聴覚障害者の主なコミュニケーション手段として手話と筆談があるが、手話の習得は難しく、手話が通じる人の数は少ない現状がある。
+
+
+\section{目的}
+
+% プロジェクトの全体的な目標を記述
+聴覚障害者のコミュニケーションの障壁をなくし、聞き手に手話の知識がなくても、会話ができるようにすることを目的とする。
+
+\section{実現上の課題}
+
+\begin{itemize}
+    \item 映像から単語への変換
+    \item 単語列から自然な文章への変換
+    \item 精度
+\end{itemize}
+
+\section{解決法}
+
+\subsection{映像から単語への変換}
+% 技術的課題に対する解決策を詳述
+既存のLLMをもとに転移学習によって手話の映像から単語に変換するAIを作成する。
+\subsubsection{単語列から自然な文章への変換}
+% 提案するシステムのアーキテクチャを説明
+既存のLLMを利用する。
+\subsubsection{精度}
+% データ統合の具体的手法を説明
+画像認識に加え、専用のモーションキャプチャを行う手袋を作成し、利用することで精度を向上させる。\\
+翻訳ミスをデータベースに記録し、一定期間の後、再度チューニングを行うことで地域差や個人差に適応する。\\
+\subsubsection{セキュリティ対策}
+% セキュリティに関する解決策を説明
+
+\subsection{運用上の解決策}
+% 運用面での解決策を詳述
+
+\subsubsection{移行戦略}
+% システム移行の戦略を説明
+
+\subsubsection{ユーザーサポート体制}
+% ユーザーサポートの体制を説明
+
+\subsection{組織的解決策}
+% 組織・人的課題に対する解決策を詳述
+
+\section{実装工程表}
+
+\subsection{プロジェクト全体スケジュール}
+% 全体のスケジュールを記述
+
+\begin{table}[h]
+\centering
+\caption{実装工程表}
+\begin{tabular}{|l|l|l|l|}
+\hline
+\textbf{フェーズ} & \textbf{期間} & \textbf{主要作業} & \textbf{成果物} \\
+\hline
+要件定義 & 20XX年X月～X月 & 要件の詳細化、仕様策定 & 要件定義書 \\
+\hline
+基本設計 & 20XX年X月～X月 & システム設計、DB設計 & 基本設計書 \\
+\hline
+詳細設計 & 20XX年X月～X月 & 詳細仕様策定 & 詳細設計書 \\
+\hline
+開発・実装 & 20XX年X月～X月 & プログラミング、単体テスト & システム \\
+\hline
+統合テスト & 20XX年X月～X月 & 統合テスト、性能テスト & テスト報告書 \\
+\hline
+移行・導入 & 20XX年X月～X月 & データ移行、本稼働 & 運用開始 \\
+\hline
+\end{tabular}
+\end{table}
+
+\subsection{マイルストーン}
+% 重要なマイルストーンを記述
+\begin{enumerate}
+    \item 要件定義完了：20XX年X月X日
+    \item 基本設計完了：20XX年X月X日
+    \item 開発完了：20XX年X月X日
+    \item 本稼働開始：20XX年X月X日
+\end{enumerate}
+
+\subsection{リスク管理}
+% プロジェクトリスクと対策を記述
+
+\section{効果}
+
+\subsection{定量的効果}
+% 数値で測定可能な効果を記述
+\begin{table}[h]
+\centering
+\caption{定量的効果の試算}
+\begin{tabular}{|l|r|r|r|}
+\hline
+\textbf{項目} & \textbf{現状} & \textbf{改善後} & \textbf{改善率} \\
+\hline
+処理時間 & 60分 & 15分 & 75\%削減 \\
+\hline
+エラー率 & 5\% & 1\% & 80\%削減 \\
+\hline
+運用コスト & 100万円/月 & 60万円/月 & 40\%削減 \\
+\hline
+\end{tabular}
+\end{table}
+
+\subsection{定性的効果}
+% 数値化困難だが重要な効果を記述
+\begin{itemize}
+    \item ユーザビリティの向上
+    \item 業務効率の改善
+    \item データ品質の向上
+    \item 意思決定の迅速化
+\end{itemize}
+
+\subsection{投資対効果（ROI）}
+% 投資対効果の分析結果を記述
+
+\section{ポンチ絵（システム概要図）}
+
+\subsection{現行システム構成}
+% 現行システムの構成図を挿入
+\begin{figure}[h]
+\centering
+% \includegraphics[width=0.8\textwidth]{current_system.png}
+\fbox{\parbox{0.8\textwidth}{\centering 現行システム構成図\\（図を挿入してください）}}
+\caption{現行システム構成}
+\end{figure}
+
+\subsection{提案システム構成}
+% 提案するシステムの構成図を挿入
+\begin{figure}[h]
+\centering
+% \includegraphics[width=0.8\textwidth]{proposed_system.png}
+\fbox{\parbox{0.8\textwidth}{\centering 提案システム構成図\\（図を挿入してください）}}
+\caption{提案システム構成}
+\end{figure}
+
+\subsection{統合アーキテクチャ概要}
+% システム統合のアーキテクチャ概要図を挿入
+\begin{figure}[h]
+\centering
+% \includegraphics[width=0.8\textwidth]{integration_architecture.png}
+\fbox{\parbox{0.8\textwidth}{\centering 統合アーキテクチャ概要図\\（図を挿入してください）}}
+\caption{統合アーキテクチャ概要}
+\end{figure}
+
+\section{まとめ}
+
+\subsection{提案の要点}
+% 提案内容の要点をまとめ
+
+\subsection{今後の課題}
+% 今後検討すべき課題を記述
+
+\subsection{結論}
+% レポートの結論を記述
+
+% 参考文献
+\begin{thebibliography}{9}
+\bibitem{ref1} 著者名, ``論文・書籍タイトル'', 出版社, 出版年.
+\bibitem{ref2} 著者名, ``論文・書籍タイトル'', 出版社, 出版年.
+\bibitem{ref3} 著者名, ``論文・書籍タイトル'', 出版社, 出版年.
+\end{thebibliography}
+
+% 付録（必要に応じて）
+\appendix
+\section{詳細仕様}
+% 詳細な技術仕様等を記述
+
+\section{コスト試算詳細}
+% コスト試算の詳細を記述
+
+\end{document}
