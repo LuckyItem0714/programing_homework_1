@@ -92,42 +92,180 @@
 \section{実装工程表}
 
 \subsection{プロジェクト全体スケジュール}
-% 全体のスケジュールを記述
+手話認識システムの開発を24ヶ月で実施する計画である。
 
-\begin{table}[h]
-\centering
-\caption{実装工程表}
-\begin{tabular}{|l|l|l|l|}
+\begin{longtable}{|p{3cm}|p{2.5cm}|p{6cm}|p{3cm}|}
 \hline
 \textbf{フェーズ} & \textbf{期間} & \textbf{主要作業} & \textbf{成果物} \\
 \hline
-要件定義 & 20XX年X月～X月 & 要件の詳細化、仕様策定 & 要件定義書 \\
+\endhead
+
+要件定義・調査 & 1-3ヶ月 & 
+\begin{itemize}
+\item 手話データセット調査・収集
+\item 既存LLM調査・選定
+\item ハードウェア要件定義
+\item ユーザー要件調査
+\end{itemize} & 
+\begin{itemize}
+\item 要件定義書
+\item データセット仕様書
+\item ハードウェア仕様書
+\end{itemize} \\
 \hline
-基本設計 & 20XX年X月～X月 & システム設計、DB設計 & 基本設計書 \\
+
+基本設計 & 4-6ヶ月 & 
+\begin{itemize}
+\item システムアーキテクチャ設計
+\item AI モデル基本設計
+\item モーションキャプチャ手袋設計
+\item データベース設計
+\item UI/UX設計
+\end{itemize} & 
+\begin{itemize}
+\item システム設計書
+\item AI モデル設計書
+\item データベース設計書
+\item UI設計書
+\end{itemize} \\
 \hline
-詳細設計 & 20XX年X月～X月 & 詳細仕様策定 & 詳細設計書 \\
+
+プロトタイプ開発 & 7-10ヶ月 & 
+\begin{itemize}
+\item 映像認識プロトタイプ開発
+\item 基本的な手話単語認識実装
+\item モーションキャプチャ手袋試作
+\item データ収集システム開発
+\end{itemize} & 
+\begin{itemize}
+\item プロトタイプシステム
+\item 手袋試作品
+\item 基本性能評価結果
+\end{itemize} \\
 \hline
-開発・実装 & 20XX年X月～X月 & プログラミング、単体テスト & システム \\
+
+AI モデル開発 & 11-16ヶ月 & 
+\begin{itemize}
+\item 転移学習によるモデル構築
+\item 手話データセットでの学習
+\item 単語列→文章変換モデル統合
+\item 精度向上のためのチューニング
+\end{itemize} & 
+\begin{itemize}
+\item 手話認識AIモデル
+\item 自然言語変換モデル
+\item 学習済みパラメータ
+\end{itemize} \\
 \hline
-統合テスト & 20XX年X月～X月 & 統合テスト、性能テスト & テスト報告書 \\
+
+ハードウェア開発 & 8-15ヶ月 & 
+\begin{itemize}
+\item モーションキャプチャ手袋開発
+\item センサー最適化
+\item 無線通信機能実装
+\item 量産設計
+\end{itemize} & 
+\begin{itemize}
+\item 完成版手袋
+\item 製造仕様書
+\item 品質管理基準
+\end{itemize} \\
 \hline
-移行・導入 & 20XX年X月～X月 & データ移行、本稼働 & 運用開始 \\
+
+統合システム開発 & 17-20ヶ月 & 
+\begin{itemize}
+\item 各コンポーネント統合
+\item リアルタイム処理最適化
+\item ユーザーインターフェース完成
+\item フィードバック機能実装
+\end{itemize} & 
+\begin{itemize}
+\item 統合システム
+\item 操作マニュアル
+\item API仕様書
+\end{itemize} \\
+\hline
+
+テスト・評価 & 21-22ヶ月 & 
+\begin{itemize}
+\item システム全体テスト
+\item ユーザビリティテスト
+\item 精度評価・改善
+\item 負荷テスト
+\end{itemize} & 
+\begin{itemize}
+\item テスト報告書
+\item 性能評価書
+\item 改善提案書
+\end{itemize} \\
+\hline
+
+導入準備・運用開始 & 23-24ヶ月 & 
+\begin{itemize}
+\item 運用環境構築
+\item ユーザートレーニング
+\item サポート体制確立
+\item 本格運用開始
+\end{itemize} & 
+\begin{itemize}
+\item 運用システム
+\item 運用マニュアル
+\item サポート体制
+\end{itemize} \\
+\hline
+\end{longtable}
+
+\subsection{詳細マイルストーン}
+\begin{enumerate}
+    \item 要件定義完了：3ヶ月目
+    \item 基本設計完了：6ヶ月目
+    \item プロトタイプ完成：10ヶ月目
+    \item AIモデル初版完成：13ヶ月目
+    \item ハードウェア試作完成：12ヶ月目
+    \item 統合システムα版完成：18ヶ月目
+    \item システムβ版完成：20ヶ月目
+    \item 本格運用開始：24ヶ月目
+\end{enumerate}
+
+\subsection{並行開発スケジュール}
+\begin{table}[h]
+\centering
+\caption{開発チーム別スケジュール}
+\begin{tabular}{|l|c|c|c|c|c|c|c|c|}
+\hline
+\textbf{チーム} & \textbf{1-3M} & \textbf{4-6M} & \textbf{7-10M} & \textbf{11-16M} & \textbf{17-20M} & \textbf{21-22M} & \textbf{23-24M} \\
+\hline
+AIチーム & 調査 & 設計 & プロト & \textbf{開発} & 統合 & テスト & 運用 \\
+\hline
+HWチーム & 調査 & 設計 & 試作 & \textbf{開発} & 統合 & テスト & 運用 \\
+\hline
+SWチーム & 要件 & 設計 & プロト & 開発 & \textbf{統合} & テスト & 運用 \\
+\hline
+UIチーム & 調査 & 設計 & プロト & 開発 & \textbf{統合} & テスト & 運用 \\
 \hline
 \end{tabular}
 \end{table}
 
-\subsection{マイルストーン}
-% 重要なマイルストーンを記述
-\begin{enumerate}
-    \item 要件定義完了：20XX年X月X日
-    \item 基本設計完了：20XX年X月X日
-    \item 開発完了：20XX年X月X日
-    \item 本稼働開始：20XX年X月X日
-\end{enumerate}
-
 \subsection{リスク管理}
-% プロジェクトリスクと対策を記述
-
+\begin{table}[h]
+\centering
+\caption{主要リスクと対策}
+\begin{tabular}{|p{4cm}|p{2cm}|p{6cm}|}
+\hline
+\textbf{リスク項目} & \textbf{発生確率} & \textbf{対策} \\
+\hline
+AI精度が目標未達 & 中 & 複数のモデルを並行開発、データセット拡充 \\
+\hline
+ハードウェア開発遅延 & 中 & 外部ベンダーとの連携、代替案検討 \\
+\hline
+データ収集困難 & 高 & 聴覚障害者団体との連携強化 \\
+\hline
+リアルタイム処理性能不足 & 中 & 処理最適化、ハードウェア性能向上 \\
+\hline
+個人差への対応困難 & 高 & 継続学習機能の実装、ユーザー適応機能 \\
+\hline
+\end{tabular}
+\end{table}
 \section{効果}
 
 \subsection{定量的効果}
